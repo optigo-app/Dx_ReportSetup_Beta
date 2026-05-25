@@ -1,0 +1,59 @@
+@import "../../../sass/Variable.scss";
+
+.add_sp_columdata {
+  .spList_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-inline: 30px;
+    background-color: rgb(86, 74, 252);
+    height: 60px;
+
+    .spList_title {
+      font-size: 20px;
+      font-weight: 600;
+      color: white;
+      margin: 0px;
+      font-family: $fontFamily;
+    }
+
+    .splidt_add_icone {
+      color: white !important;
+      height: 40px;
+      width: 20px;
+    }
+  }
+
+  .allColum_Data_main {
+    margin: 0px 0px 0px 20px;
+    max-height: 61vh;
+    overflow: auto;
+    width: fit-content;
+    padding-top: 5px;
+
+    &::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent; // keep it clean
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgb(86, 74, 252);
+      border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: rgb(66, 54, 220);
+    }
+
+    /* 🔹 Firefox */
+    scrollbar-width: thin; /* makes it thinner */
+    scrollbar-color: rgb(86, 74, 252) transparent;
+  }
+
+  .Btn_saveAll {
+    font-family: $fontFamily;
+  }
+}

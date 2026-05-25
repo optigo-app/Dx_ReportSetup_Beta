@@ -1,0 +1,303 @@
+@use "../../../sass/Variable.scss" as *;
+
+$brand: rgb(86, 74, 252);
+$brand-dark: rgb(66, 54, 220);
+$brand-light: rgba(86, 74, 252, 0.08);
+
+.Customize_Colum_Full_main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  /* ── Tab bar ── */
+  .cc_tab_bar {
+    display: flex;
+    gap: 2px;
+    padding: 10px 16px 0;
+    border-bottom: 2px solid #eee;
+    background: #fafbff;
+    flex-shrink: 0;
+  }
+
+  .cc_tab {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 7px 16px;
+    font-family: $fontFamily;
+    font-size: 13px;
+    font-weight: 500;
+    color: #777;
+    cursor: pointer;
+    margin-bottom: -2px;
+    border-radius: 6px 6px 0 0;
+    transition: color 0.15s, background 0.15s;
+    &:hover { background: $brand-light; color: $brand; }
+  }
+
+  .cc_tab_active {
+    color: $brand !important;
+    border-bottom-color: $brand;
+    background: $brand-light;
+    font-weight: 600;
+  }
+
+  .cc_tab_panel {
+    padding: 14px 16px;
+    flex: 1;
+    overflow-y: auto;
+    &::-webkit-scrollbar { width: 3px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: $brand; border-radius: 10px; }
+    scrollbar-width: thin;
+    scrollbar-color: $brand transparent;
+  }
+
+  .cc_section_label {
+    font-family: $fontFamily;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #999;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #f0f0f5;
+  }
+
+  .cc_field_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .cc_bool_grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px 8px;
+  }
+
+  .cc_bool_item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    cursor: pointer;
+    &:hover { background: $brand-light; }
+  }
+
+  .cc_checkbox_row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-bottom: 10px;
+  }
+
+  .cc_radio_row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .cc_radio_item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: $fontFamily;
+    font-size: 13px;
+    color: #555;
+    transition: border-color 0.15s, background 0.15s;
+    &:hover { border-color: $brand; background: $brand-light; }
+
+    .cc_radio_dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #bbb;
+      background: white;
+      flex-shrink: 0;
+      transition: background 0.15s, border-color 0.15s;
+    }
+  }
+
+  .cc_radio_active {
+    border-color: $brand !important;
+    background: $brand-light;
+    color: $brand;
+    font-weight: 600;
+
+    .cc_radio_dot {
+      background: $brand;
+      border-color: $brand;
+    }
+  }
+
+  .cc_filter_list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .cc_filter_row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    &:hover { background: $brand-light; }
+  }
+
+  .cc_icon_row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .cc_icon_btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 14px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: $fontFamily;
+    font-size: 11px;
+    color: #777;
+    transition: border-color 0.15s, background 0.15s;
+    &:hover { border-color: $brand; background: $brand-light; }
+  }
+
+  .cc_icon_active {
+    border-color: $brand !important;
+    background: $brand-light;
+    color: $brand;
+  }
+
+  .Customize_Colum_main {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    font-family: $fontFamily;
+
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    /* remove track */
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    /* purple thumb only */
+    &::-webkit-scrollbar-thumb {
+      background-color: #776cf0;
+      border-radius: 10px;
+      border: none;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: #5b52d6;
+    }
+
+    .customize_colum_input {
+      font-family: $fontFamily;
+      .MuiInputBase-input {
+        font-family: $fontFamily !important;
+        padding: 8px;
+        font-size: 15px;
+      }
+      .MuiFormLabel-root {
+        top: -8px;
+      }
+      .MuiFormLabel-root.Mui-focused,
+      .MuiFormLabel-root.MuiFormLabel-filled {
+        top: 2px !important;
+      }
+    }
+
+    .left-form,
+    .right-preview,
+    .final-json-view {
+      flex: 1;
+      min-width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 16px;
+      overflow-y: auto;
+      max-height: 90vh;
+      background-color: #fdfdfd;
+    }
+
+    .left-form input,
+    .left-form select {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 6px;
+      font-size: 14px;
+      border: none;
+      margin: 0px;
+    }
+
+    .left-form label {
+      display: block;
+      margin: 5px 0;
+      font-size: 14px;
+    }
+
+    .button-inline {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .preview-item {
+      border: 1px dashed #999;
+      padding: 8px;
+      margin-bottom: 10px;
+      background-color: #fff;
+    }
+
+    .chekbox_title_value {
+      display: flex;
+      align-items: center;
+      // min-width: 200px;
+      font-size: 16px;
+      font-family: $fontFamily;
+    }
+
+    .other_title {
+      margin: 10px 0px 5px 0px;
+      font-weight: 600;
+      font-family: $fontFamily;
+      text-decoration: underline;
+    }
+  }
+
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-block: 10px;
+    width: 100%;
+    justify-content: center;
+
+    .Btn_CustomizeMaster_Model_Cancel {
+      font-family: $fontFamily;
+      background-color: #f03d3d;
+      color: white;
+    }
+    .Btn_Customize_Model_Save {
+      font-family: $fontFamily;
+      background-color: rgb(86, 74, 252);
+      color: white;
+    }
+  }
+}

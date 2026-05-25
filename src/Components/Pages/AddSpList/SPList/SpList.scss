@@ -1,0 +1,119 @@
+@use "../../../sass/Variable.scss" as *;
+
+
+.SP_list_main {
+  .spList_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-inline: 20px;
+    background-color: rgb(86, 74, 252);
+    height: 60px;
+    .spList_title {
+      font-size: 20px;
+      font-weight: 600;
+      color: white;
+      font-family: $fontFamily;
+      margin: 0px;
+    }
+  }
+
+  .sp_list_div_main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 85vh;
+
+    .Sp_list_flexView {
+      height: 65vh;
+      overflow: auto;
+      &::-webkit-scrollbar {
+        width: 3px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent; // keep it clean
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgb(86, 74, 252);
+        border-radius: 10px;
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: rgb(66, 54, 220);
+      }
+
+      /* 🔹 Firefox */
+      scrollbar-width: thin; /* makes it thinner */
+      scrollbar-color: rgb(86, 74, 252) transparent;
+    }
+
+    .Sp_list_singleView {
+      // box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 50px;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      text-transform: none;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      width: 97%;
+
+      .sp_list_Title {
+        font-size: 15px;
+        margin: 0px 3px;
+        font-weight: 600;
+        color: black !important;
+        font-family: $fontFamily;
+        width: 100%;
+        display: flex;
+      }
+      .sp_list_Description {
+        font-size: 13px;
+        display: flex;
+        font-family: $fontFamily;
+        width: 100%;
+        margin: 0px 3px;
+        color: black !important;
+      }
+    }
+
+    .Sp_list_ADD_REPORT {
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      text-transform: none;
+      padding: 10px 15px;
+      border: 2px dotted #ddd;
+      color: rgb(86, 74, 252) !important;
+      border-radius: 6px;
+      width: 99.5%;
+      font-family: $fontFamily;
+      font-size: 18px;
+      gap: 5px;
+    }
+  }
+
+  .Btn_EditSp {
+    font-family: $fontFamily;
+    color: rgb(86, 74, 252);
+    border-color: rgb(86, 74, 252);
+  }
+
+  .Btn_ShwoReport {
+    font-family: $fontFamily;
+    color: rgb(86, 74, 252);
+    border-color: rgb(86, 74, 252);
+  }
+
+  .Btn_AddColumn {
+    font-family: $fontFamily;
+    color: rgb(86, 74, 252);
+    border-color: rgb(86, 74, 252);
+  }
+}

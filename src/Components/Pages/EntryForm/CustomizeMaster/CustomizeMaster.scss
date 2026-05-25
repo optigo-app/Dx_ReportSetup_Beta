@@ -1,0 +1,236 @@
+@use "../../../sass/Variable.scss" as *;
+
+.Customize_Master_Colum_main {
+  display: flex;
+  gap: 20px;
+  font-family: Arial, sans-serif;
+  flex-wrap: wrap;
+
+  .left-form {
+    height: 85vh;
+    overflow: auto;
+    &::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgb(86, 74, 252);
+      border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: rgb(66, 54, 220);
+    }
+
+    /* 🔹 Firefox */
+    scrollbar-width: thin; /* makes it thinner */
+    scrollbar-color: rgb(86, 74, 252) transparent;
+  }
+  .left-form,
+  .right-preview,
+  .final-json-view {
+    flex: 1;
+    min-width: 300px;
+    border-radius: 6px;
+    overflow-y: auto;
+    max-height: 90vh;
+    background-color: #fdfdfd;
+  }
+
+  .left-form input,
+  .left-form select {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 6px;
+    font-size: 14px;
+    border: none;
+    margin: 0px;
+  }
+
+  .left-form label {
+    display: block;
+    margin: 0px;
+    font-size: 14px;
+  }
+
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .button-inline {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .preview-item {
+    border: 1px dashed #999;
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: #fff;
+  }
+
+  .chekbox_title_value {
+    display: flex;
+    align-items: center;
+    min-width: 180px;
+    font-size: 16px;
+    font-family: $fontFamily;
+  }
+
+  .chekbox_title_value_top {
+    display: flex;
+    align-items: center;
+    min-width: 120px;
+    font-size: 16px;
+    font-family: $fontFamily;
+  }
+
+  .cm_section_label {
+    font-family: $fontFamily;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #999;
+    margin: 0 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #f0f0f5;
+  }
+
+  .cm_chip_grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-bottom: 14px;
+  }
+
+  .cm_chip {
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    border: 1.5px solid #e0e0ee;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fafbff;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: $fontFamily;
+    &:hover {
+      border-color: rgba(86, 74, 252, 0.4);
+      background: rgba(86, 74, 252, 0.04);
+    }
+    .chekbox_title_value {
+      font-size: 13px;
+      min-width: unset;
+      flex: 1;
+    }
+  }
+
+  .cm_chip_on {
+    border-color: rgb(86, 74, 252) !important;
+    background: rgba(86, 74, 252, 0.06) !important;
+    .chekbox_title_value { color: rgb(86, 74, 252); font-weight: 600; }
+  }
+
+  .cm_print_row {
+    display: flex;
+    flex-direction: column;
+    width: 240px;
+    margin-bottom: 4px;
+  }
+
+  .cm_select {
+    font-family: $fontFamily;
+    padding: 6px 10px;
+    border-radius: 7px;
+    border: 1.5px solid #ddd;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    &:focus { border-color: rgb(86, 74, 252); }
+  }
+
+  .cm_advanced_row {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .Btn_CustomizeMaster_Model_Cancel {
+    font-family: $fontFamily;
+    background-color: #f03d3d;
+    color: white;
+  }
+  .Btn_Customize_Model_Save {
+    font-family: $fontFamily;
+    background-color: rgb(86, 74, 252);
+    color: white;
+  }
+}
+
+.Customize_Master_Colum_main {
+  padding: 16px;
+
+  .checkbox-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .checkbox-item {
+      width: 50%;
+      display: flex;
+      align-items: center;
+      label {
+        display: flex;
+        align-items: center;
+        span {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+
+  .chart_view_settig_div {
+    margin-top: 16px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #f9f9f9;
+
+    .chart_item {
+      margin-bottom: 12px;
+      .chart_header {
+        display: flex;
+        align-items: center;
+        span {
+          font-weight: 600;
+          margin-left: 4px;
+        }
+      }
+
+      .chart_fields {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+    }
+  }
+
+  .button-group {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .field-dropdown {
+    flex: 1;
+    min-width: 120px;
+  }
+}

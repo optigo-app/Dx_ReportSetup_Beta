@@ -1,0 +1,43 @@
+import axios from "axios";
+
+// const APIURL =
+//   window.location.hostname === "localhost" ||
+//   window.location.hostname === "nzen"
+//     ? "http://newnextjs.web/api/report"
+//     : "https://nxt03.optigoapps.com/api/report";
+
+// const APIURL = "https://view.optigoapps.com/ExpressApp/EvoApp.aspx";
+// const APIURL = "https://livenx.optigoapps.com/api/report";
+// const APIURL = "http://nzen/jo/ExpressApp/EvoApp.aspx";
+
+export const CommonAPI = async (body) => {
+  try {
+    let AllData = JSON.parse(sessionStorage.getItem("reportVarible"));
+    const headerOnline = {
+      Yearcode: `${AllData?.YearCode}`,
+      version: `${atob(AllData?.cuVer)}`,
+      sv: `${atob(AllData?.SV)}`,
+      sp: 34,
+    };
+
+    const headerLocal = {
+      Yearcode: `${AllData?.YearCode}`,
+      version: `${atob(AllData?.cuVer)}`,
+      sv: `${atob(AllData?.SV)}`,
+      sp: 34,
+    };
+
+    const header =
+      window.location.hostname === "localhost" ||
+        window.location.hostname === "nzen"
+        ? headerLocal
+        : headerOnline;
+
+    const response = await axios.post(atob(AllData?.rptapiurl), body, {
+      headers: header,
+    });
+    return response?.data;
+  } catch (error) {
+    console.error("error is..", error);
+  }
+};
