@@ -336,6 +336,7 @@ const SvgIconSection = ({ spData, svgRows, setSvgRows }) => {
 };
 
 const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirectionMaster, allPrintData, formulaList, isFormulaBasedSummary }) => {
+  console.log('allPrintData: ', allPrintData);
   const [masterSettings, setMasterSettings] = useState({});
   const [chartViewData, setChartViewData] = useState(DEFAULT_CHART_VIEW);
   const [imageViewData, setImageViewData] = useState([]);
@@ -344,9 +345,11 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
   const [openChartType, setOpenChartType] = useState("");
   const [activeDrawer, setActiveDrawer] = useState(null);
   const [selectedPrintMaster, setSelectedPrintMaster] = useState("");
+  const [selectedMainPrint, setSelectedMainPrint] = useState("");
   const [selectedDefaultPrint, setSelectedDefaultPrint] = useState("");
   const [selectedDefaultPrintColum, setSelectedDefaultPrintColum] = useState("");
   const [svgRows, setSvgRows] = useState([]);
+  const [activeTab, setActiveTab] = useState(0);
   const isSaving = useRef(false);
 
   useEffect(() => {
@@ -379,6 +382,7 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
     }
 
     if (spData?.PrintMasterName) setSelectedPrintMaster(spData.PrintMasterName);
+    if (spData?.MainPrintColumn) setSelectedMainPrint(spData.MainPrintColumn);
     if (spData?.DefaultPrintColumn) setSelectedDefaultPrintColum(spData.DefaultPrintColumn);
     if (spData?.DefaultPrintName) setSelectedDefaultPrint(spData.DefaultPrintName);
   }, [initialData, spId, spData]);
@@ -431,7 +435,8 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
       FieldName: row.value || "", lable: row.lable || "", value: row.value || "",
       fontsizel: row.fontsizel || "", fontsizev: row.fontsizev || "",
       fontweightl: row.fontweightl || "", fontweightv: row.fontweightv || "",
-      displayorder: row.displayorder || ""
+      displayorder: row.displayorder || "",
+      IsHideShowOption: row.IsHideShowOption || "",
     }));
   };
 
@@ -448,6 +453,7 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
     const p = {
       ReportId: spId,
       PrintMasterName: selectedPrintMaster,
+      MainPrintColumn: selectedMainPrint,
       DefaultPrintColumn: selectedDefaultPrintColum,
       DefaultPrintName: selectedDefaultPrint,
       SummaryFormulaArray: formulasToPayload(formulaList || []),
@@ -491,6 +497,7 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
           printMasterName: selectedPrintMaster,
           DefaultPrintColumn: selectedDefaultPrintColum,
           DefaultPrintName: selectedDefaultPrint,
+          MainPrintColumn: selectedMainPrint,
         });
       }
     } catch (err) {
@@ -521,6 +528,23 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
   };
 
 
+  const fieldOptions = Array.isArray(spData?.result)
+    ? spData.result.map((col) => col.FieldName).filter(Boolean)
+    : [];
+
+
+  const printOptions = allPrintData.flatMap((item) => {
+    try {
+      return JSON.parse(item.DistinctPrintNamesJSON || "[]").map(
+        (printItem) => ({
+          id: printItem.id,
+          name: printItem.printname,
+        })
+      );
+    } catch (err) {
+      return [];
+    }
+  });
 
   return (
     <div className="Customize_Master_Colum_main" style={{ position: "relative", overflow: "hidden" }}>
@@ -530,141 +554,175 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
         </Box>
       </Modal>
 
+      {/* ── Tab Bar ── */}
+      <div className="cc_tab_bar">
+        {["Report Features", "Print", "Iframe", "Switch Report"].map((label, i) => (
+          <button
+            key={label}
+            className={`cc_tab${activeTab === i ? " cc_tab_active" : ""}`}
+            onClick={() => setActiveTab(i)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       <div className="left-form">
-        <p className="cm_section_label">Report Features</p>
-        <div className="cm_chip_grid">
-          {masterSettingsOrder
-            .filter((key) => key in masterSettings)
-            .map((key) => {
-              const isChecked = Boolean(masterSettings[key]);
-              const hasAddData = ADD_DATA_KEYS.includes(key);
-              return (
-                <div key={key} className={`cm_chip${isChecked ? " cm_chip_on" : ""}`} onClick={() => handleCheckboxChange(key)}>
-                  <Checkbox checked={isChecked} onChange={() => handleCheckboxChange(key)} size="small" sx={{ p: "2px", mr: "4px" }} onClick={(e) => e.stopPropagation()} />
-                  <span className="chekbox_title_value">{key}</span>
-                  {hasAddData && isChecked && (
-                    <Button size="small" variant="outlined"
-                      onClick={(e) => { e.stopPropagation(); handleAddDataClick(e, key); }}
-                      sx={{ ml: "auto", fontSize: "10px", py: "1px", px: "6px", color: "rgb(86,74,252)", borderColor: "rgb(86,74,252)", minWidth: "unset", lineHeight: 1.4 }}
+
+        {/* ══ TAB 0: REPORT FEATURES ══ */}
+        {activeTab === 0 && (
+          <div className="cc_tab_panel">
+            <p className="cm_section_label">Report Features</p>
+            <div className="cm_chip_grid">
+              {masterSettingsOrder
+                .filter((key) => key in masterSettings)
+                .map((key) => {
+                  const isChecked = Boolean(masterSettings[key]);
+                  const hasAddData = ADD_DATA_KEYS.includes(key);
+                  return (
+                    <div
+                      key={key}
+                      className={`cm_chip${isChecked ? " cm_chip_on" : ""}`}
+                      onClick={() => handleCheckboxChange(key)}
                     >
-                      Config
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
-        </div>
-
-        <Divider style={{ margin: "14px 0 10px" }} />
-
-        <div style={{ display: 'flex', gap: '50px' }}>
-          <div className="cm_print_row">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <label className="cm_section_label" style={{ marginBottom: 0 }}>Print</label>
+                      <Checkbox
+                        checked={isChecked}
+                        onChange={() => handleCheckboxChange(key)}
+                        size="small"
+                        sx={{ p: "2px", mr: "4px" }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="chekbox_title_value">{key}</span>
+                      {hasAddData && isChecked && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={(e) => { e.stopPropagation(); handleAddDataClick(e, key); }}
+                          sx={{ ml: "auto", fontSize: "10px", py: "1px", px: "6px", color: "rgb(86,74,252)", borderColor: "rgb(86,74,252)", minWidth: "unset", lineHeight: 1.4 }}
+                        >
+                          Config
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
-            <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-              <InputLabel id="print-template-label">
-                Print Template
-              </InputLabel>
 
-              <Select
-                labelId="print-template-label"
-                value={selectedPrintMaster}
-                label="Print Template"
-                onChange={(e) => setSelectedPrintMaster(e.target.value)}
-              >
-                <MenuItem value="">
-                  -- Select --
-                </MenuItem>
-
-                {allPrintData.map((item, index) => (
-                  <MenuItem key={index} value={item?.PrintMaster}>
-                    {item?.PrintMaster}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Divider style={{ margin: "14px 0 10px" }} />
+            <SvgIconSection spData={spData} svgRows={svgRows} setSvgRows={setSvgRows} />
           </div>
-          <SvgIconSection spData={spData} svgRows={svgRows} setSvgRows={setSvgRows} />
-        </div>
+        )}
 
-        <Divider style={{ margin: "14px 0 10px" }} />
+        {/* ══ TAB 1: PRINT ══ */}
+        {activeTab === 1 && (
+          <div className="cc_tab_panel">
+            <p className="cm_section_label">Print Settings</p>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <FormControl size="small" sx={{ mb: 2, width: '250px' }}>
-            <InputLabel id="print-template-label">
-              Default Print
-            </InputLabel>
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+              <FormControl size="small" sx={{ minWidth: 220 }}>
+                <InputLabel>Print Template</InputLabel>
+                <Select
+                  value={selectedPrintMaster}
+                  label="Print Template"
+                  onChange={(e) => setSelectedPrintMaster(e.target.value)}
+                  MenuProps={{ PaperProps: { style: { maxHeight: 500 } } }}
+                >
+                  <MenuItem value="">-- Select --</MenuItem>
+                  {allPrintData.map((item, index) => (
+                    <MenuItem key={index} value={item?.PrintMaster}>
+                      {item?.PrintMaster}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-            <Select
-              labelId="print-template-label"
-              value={selectedDefaultPrint}
-              label="Print Template"
-              onChange={(e) => setSelectedDefaultPrint(e.target.value)}
-            >
-              <MenuItem value="">
-                -- Select --
-              </MenuItem>
+              <FormControl size="small" sx={{ minWidth: 220 }}>
+                <InputLabel>Print Data Column</InputLabel>
+                <Select
+                  value={selectedMainPrint}
+                  label="Print Data Column"
+                  onChange={(e) => setSelectedMainPrint(e.target.value)}
+                  MenuProps={{ PaperProps: { style: { maxHeight: 500 } } }}
+                >
+                  <MenuItem value="">-- Select --</MenuItem>
+                  {fieldOptions.map((f) => (
+                    <MenuItem key={f} value={f}>{f}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
 
-              {allPrintData.map((item, index) => (
-                <MenuItem key={index} value={item?.PrintMaster}>
-                  {item?.PrintMaster}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            <Divider style={{ margin: "14px 0 10px" }} />
+            <p className="cm_section_label">Default Print</p>
 
-          <FormControl size="small" sx={{ mb: 2, width: '250px' }}>
-            <InputLabel id="print-template-label">
-              Default Print Colum Field
-            </InputLabel>
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+              <FormControl size="small" sx={{ minWidth: 220 }}>
+                <InputLabel>Select Default Print</InputLabel>
+                <Select
+                  value={selectedDefaultPrint}
+                  label="Select Default Print"
+                  onChange={(e) => setSelectedDefaultPrint(e.target.value)}
+                >
+                  <MenuItem value="">-- Select Default Print --</MenuItem>
+                  {printOptions.map((item) => (
+                    <MenuItem key={item.id} value={item.name}>{item.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-            <Select
-              labelId="print-template-label"
-              value={selectedDefaultPrintColum}
-              label="Default Print Colum Field"
-              onChange={(e) => setSelectedDefaultPrintColum(e.target.value)}
-            >
-              <MenuItem value="">
-                -- Select --
-              </MenuItem>
+              <FormControl size="small" sx={{ minWidth: 220 }}>
+                <InputLabel>Default Print Column Field</InputLabel>
+                <Select
+                  value={selectedDefaultPrintColum}
+                  label="Default Print Column Field"
+                  onChange={(e) => setSelectedDefaultPrintColum(e.target.value)}
+                >
+                  <MenuItem value="">-- Select --</MenuItem>
+                  {fieldOptions.map((f) => (
+                    <MenuItem key={f} value={f}>{f}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+          </div>
+        )}
 
-              {allPrintData.map((item, index) => (
-                <MenuItem key={index} value={item?.PrintMaster}>
-                  {item?.PrintMaster}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        {/* ══ TAB 2: IFRAME ══ */}
+        {activeTab === 2 && (
+          <div className="cc_tab_panel">
+            <p className="cm_section_label">Iframe Settings</p>
+            <OnReportIframeButton
+              spData={spData}
+              redirectionMaster={redirectionMaster}
+              currentReportIframeButton={masterSettings.ReportIframeButton}
+              currentIframeDataArray={masterSettings.IframeDataArray}
+              onChange={handleIframeChange}
+            />
+          </div>
+        )}
 
-        </div>
-        <Divider style={{ margin: "14px 0 10px" }} />
+        {/* ══ TAB 3: SWITCH REPORT ══ */}
+        {activeTab === 3 && (
+          <div className="cc_tab_panel">
+            <p className="cm_section_label">Switch Report Settings</p>
+            <SwitchtoReportFunctionality
+              spData={spData}
+              redirectionMaster={redirectionMaster}
+              currentIsMultiTab={masterSettings.IsMultiTab}
+              currentMultiTabDataArray={masterSettings.MultiTabDataArray}
+              onChange={handleMultiTabChange}
+            />
+          </div>
+        )}
 
-        <div className="cm_advanced_row">
-          {/* ── useCallback handlers — no inline arrows — stops infinite loop ── */}
-          <OnReportIframeButton
-            spData={spData}
-            redirectionMaster={redirectionMaster}
-            currentReportIframeButton={masterSettings.ReportIframeButton}
-            currentIframeDataArray={masterSettings.IframeDataArray}
-            onChange={handleIframeChange}
-          />
-          <SwitchtoReportFunctionality
-            spData={spData}
-            redirectionMaster={redirectionMaster}
-            currentIsMultiTab={masterSettings.IsMultiTab}
-            currentMultiTabDataArray={masterSettings.MultiTabDataArray}
-            onChange={handleMultiTabChange}
-          />
-        </div>
-
+        {/* ── Save / Cancel ── */}
         <div className="button-group" style={{ marginTop: 16 }}>
           <Button onClick={onClose} className="Btn_CustomizeMaster_Model_Cancel">Cancel</Button>
           <Button onClick={handleSave} className="Btn_Customize_Model_Save">Save</Button>
         </div>
       </div>
 
+      {/* ── Chart / Image / Print Drawers ── */}
       <Drawer
         anchor="right"
         open={Boolean(activeDrawer)}

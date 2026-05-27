@@ -2,97 +2,73 @@
 
 .Customize_Master_Colum_main {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  gap: 0;
   font-family: Arial, sans-serif;
-  flex-wrap: wrap;
 
+  // ── Tab Bar ──────────────────────────────────────────
+  .cc_tab_bar {
+    display: flex;
+    gap: 4px;
+    padding: 10px 16px 0;
+    border-bottom: 2px solid #f0f0f5;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  .cc_tab {
+    font-family: $fontFamily;
+    font-size: 13px;
+    font-weight: 500;
+    color: #888;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+
+    &:hover {
+      color: rgb(86, 74, 252);
+      background: rgba(86, 74, 252, 0.04);
+    }
+  }
+
+  .cc_tab_active {
+    color: rgb(86, 74, 252) !important;
+    border-bottom-color: rgb(86, 74, 252) !important;
+    font-weight: 700;
+    background: rgba(86, 74, 252, 0.05);
+  }
+
+  // ── Left Form (tab content wrapper) ──────────────────
   .left-form {
     height: 85vh;
     overflow: auto;
-    &::-webkit-scrollbar {
-      width: 3px;
-    }
+    padding: 16px;
 
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
+    &::-webkit-scrollbar { width: 3px; }
+    &::-webkit-scrollbar-track { background: transparent; }
     &::-webkit-scrollbar-thumb {
       background: rgb(86, 74, 252);
       border-radius: 10px;
     }
-
-    &::-webkit-scrollbar-thumb:hover {
-      background: rgb(66, 54, 220);
-    }
-
-    /* 🔹 Firefox */
-    scrollbar-width: thin; /* makes it thinner */
+    &::-webkit-scrollbar-thumb:hover { background: rgb(66, 54, 220); }
+    scrollbar-width: thin;
     scrollbar-color: rgb(86, 74, 252) transparent;
   }
-  .left-form,
-  .right-preview,
-  .final-json-view {
-    flex: 1;
-    min-width: 300px;
-    border-radius: 6px;
-    overflow-y: auto;
-    max-height: 90vh;
-    background-color: #fdfdfd;
-  }
 
-  .left-form input,
-  .left-form select {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 6px;
-    font-size: 14px;
-    border: none;
-    margin: 0px;
-  }
-
-  .left-form label {
-    display: block;
-    margin: 0px;
-    font-size: 14px;
-  }
-
-  .button-group {
+  // ── Tab Panel ────────────────────────────────────────
+  .cc_tab_panel {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 4px;
   }
 
-  .button-inline {
-    display: flex;
-    gap: 10px;
-    margin-top: 6px;
-  }
-
-  .preview-item {
-    border: 1px dashed #999;
-    padding: 8px;
-    margin-bottom: 10px;
-    background-color: #fff;
-  }
-
-  .chekbox_title_value {
-    display: flex;
-    align-items: center;
-    min-width: 180px;
-    font-size: 16px;
-    font-family: $fontFamily;
-  }
-
-  .chekbox_title_value_top {
-    display: flex;
-    align-items: center;
-    min-width: 120px;
-    font-size: 16px;
-    font-family: $fontFamily;
-  }
-
+  // ── Section Label ────────────────────────────────────
   .cm_section_label {
     font-family: $fontFamily;
     font-size: 11px;
@@ -105,6 +81,7 @@
     border-bottom: 1px solid #f0f0f5;
   }
 
+  // ── Report Features Chip Grid ────────────────────────
   .cm_chip_grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -122,10 +99,12 @@
     background: #fafbff;
     transition: border-color 0.15s, background 0.15s;
     font-family: $fontFamily;
+
     &:hover {
       border-color: rgba(86, 74, 252, 0.4);
       background: rgba(86, 74, 252, 0.04);
     }
+
     .chekbox_title_value {
       font-size: 13px;
       min-width: unset;
@@ -136,14 +115,43 @@
   .cm_chip_on {
     border-color: rgb(86, 74, 252) !important;
     background: rgba(86, 74, 252, 0.06) !important;
-    .chekbox_title_value { color: rgb(86, 74, 252); font-weight: 600; }
+
+    .chekbox_title_value {
+      color: rgb(86, 74, 252);
+      font-weight: 600;
+    }
   }
 
+  // ── Print Tab ────────────────────────────────────────
   .cm_print_row {
     display: flex;
     flex-direction: column;
     width: 240px;
     margin-bottom: 4px;
+  }
+
+  .cm_print_fields_wrap {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  // ── Shared ───────────────────────────────────────────
+  .chekbox_title_value {
+    display: flex;
+    align-items: center;
+    min-width: 180px;
+    font-size: 16px;
+    font-family: $fontFamily;
+  }
+
+  .chekbox_title_value_top {
+    display: flex;
+    align-items: center;
+    min-width: 120px;
+    font-size: 16px;
+    font-family: $fontFamily;
   }
 
   .cm_select {
@@ -154,6 +162,7 @@
     font-size: 13px;
     outline: none;
     cursor: pointer;
+
     &:focus { border-color: rgb(86, 74, 252); }
   }
 
@@ -163,40 +172,7 @@
     flex-wrap: wrap;
   }
 
-  .Btn_CustomizeMaster_Model_Cancel {
-    font-family: $fontFamily;
-    background-color: #f03d3d;
-    color: white;
-  }
-  .Btn_Customize_Model_Save {
-    font-family: $fontFamily;
-    background-color: rgb(86, 74, 252);
-    color: white;
-  }
-}
-
-.Customize_Master_Colum_main {
-  padding: 16px;
-
-  .checkbox-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-
-    .checkbox-item {
-      width: 50%;
-      display: flex;
-      align-items: center;
-      label {
-        display: flex;
-        align-items: center;
-        span {
-          margin-right: 8px;
-        }
-      }
-    }
-  }
-
+  // ── Chart View ───────────────────────────────────────
   .chart_view_settig_div {
     margin-top: 16px;
     padding: 12px;
@@ -206,13 +182,11 @@
 
     .chart_item {
       margin-bottom: 12px;
+
       .chart_header {
         display: flex;
         align-items: center;
-        span {
-          font-weight: 600;
-          margin-left: 4px;
-        }
+        span { font-weight: 600; margin-left: 4px; }
       }
 
       .chart_fields {
@@ -223,14 +197,60 @@
     }
   }
 
+  // ── Buttons ──────────────────────────────────────────
   .button-group {
-    margin-top: 16px;
     display: flex;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .button-inline {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .Btn_CustomizeMaster_Model_Cancel {
+    font-family: $fontFamily;
+    background-color: #f03d3d;
+    color: white;
+  }
+
+  .Btn_Customize_Model_Save {
+    font-family: $fontFamily;
+    background-color: rgb(86, 74, 252);
+    color: white;
+  }
+
+  // ── Misc ─────────────────────────────────────────────
+  .preview-item {
+    border: 1px dashed #999;
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: #fff;
   }
 
   .field-dropdown {
     flex: 1;
     min-width: 120px;
+  }
+
+  .checkbox-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .checkbox-item {
+      width: 50%;
+      display: flex;
+      align-items: center;
+
+      label {
+        display: flex;
+        align-items: center;
+        span { margin-right: 8px; }
+      }
+    }
   }
 }

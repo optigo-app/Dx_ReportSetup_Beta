@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import {
     Box,
     Button,
+    Checkbox,
     Divider,
+    FormControlLabel,
     IconButton,
     MenuItem,
     Select,
@@ -19,6 +21,7 @@ const createEmptyRow = () => ({
     fontweightl: "",
     fontweightv: "",
     displayorder: "",
+    IsHideShowOption: false, // NEW
 });
 
 // ── Font weight options ────────────────────────────────────────────────────────
@@ -235,6 +238,38 @@ const ImageRowCard = ({ row, index, columns, onChange, onRemove, spData }) => {
                         inputProps={{ min: 1 }}
                     />
                 </Box>
+                {/* Row 5: Hide / Show Option */}
+                <Box sx={{ mt: "20px", ml: '10px' }}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={row.IsHideShowOption || false}
+                                onChange={(e) =>
+                                    onChange(index, "IsHideShowOption", e.target.checked)
+                                }
+                                size="small"
+                                sx={{
+                                    color: "#564afc",
+                                    "&.Mui-checked": {
+                                        color: "#564afc",
+                                    },
+                                    padding: "4px",
+                                }}
+                            />
+                        }
+                        label={
+                            <Typography
+                                sx={{
+                                    fontSize: "12px",
+                                    fontWeight: 500,
+                                    color: "#444",
+                                }}
+                            >
+                                Hide / Show Option
+                            </Typography>
+                        }
+                    />
+                </Box>
             </Box>
         </Box>
     );
@@ -271,6 +306,7 @@ const PrintViewDrawer = ({ printViewData, setPrintViewData, spData, onClose }) =
                 flexDirection: "column",
                 height: "100%",
                 background: "#f7f7fb",
+                width: '400px'
             }}
         >
             <Box

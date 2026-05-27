@@ -93,19 +93,17 @@ const ImageRowCard = ({ row, index, columns, onChange, onRemove, spData }) => {
                 >
                     {index + 1}
                 </Box>
-                <Tooltip title="Remove row">
-                    <IconButton
-                        size="small"
-                        onClick={() => onRemove(index)}
-                        sx={{
-                            color: "#e53935",
-                            "&:hover": { background: "#fdecea" },
-                            padding: "3px",
-                        }}
-                    >
-                        <Trash2 size={14} />
-                    </IconButton>
-                </Tooltip>
+                <IconButton
+                    size="small"
+                    onClick={() => onRemove(index)}
+                    sx={{
+                        color: "#e53935",
+                        "&:hover": { background: "#fdecea" },
+                        padding: "3px",
+                    }}
+                >
+                    <Trash2 size={14} />
+                </IconButton>
             </Box>
 
             {/* Row 1: Label text + Value dropdown */}
@@ -271,6 +269,7 @@ const ImageViewDrawer = ({ imageViewData, setImageViewData, spData, onClose }) =
                 flexDirection: "column",
                 height: "100%",
                 background: "#f7f7fb",
+                width: '400px'
             }}
         >
             <Box

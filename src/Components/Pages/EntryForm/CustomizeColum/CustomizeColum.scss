@@ -31,8 +31,13 @@ $brand-light: rgba(86, 74, 252, 0.08);
     cursor: pointer;
     margin-bottom: -2px;
     border-radius: 6px 6px 0 0;
-    transition: color 0.15s, background 0.15s;
-    &:hover { background: $brand-light; color: $brand; }
+    transition:
+      color 0.15s,
+      background 0.15s;
+    &:hover {
+      background: $brand-light;
+      color: $brand;
+    }
   }
 
   .cc_tab_active {
@@ -46,9 +51,16 @@ $brand-light: rgba(86, 74, 252, 0.08);
     padding: 14px 16px;
     flex: 1;
     overflow-y: auto;
-    &::-webkit-scrollbar { width: 3px; }
-    &::-webkit-scrollbar-track { background: transparent; }
-    &::-webkit-scrollbar-thumb { background: $brand; border-radius: 10px; }
+    &::-webkit-scrollbar {
+      width: 3px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: $brand;
+      border-radius: 10px;
+    }
     scrollbar-width: thin;
     scrollbar-color: $brand transparent;
   }
@@ -85,7 +97,9 @@ $brand-light: rgba(86, 74, 252, 0.08);
     padding: 3px 6px;
     border-radius: 5px;
     cursor: pointer;
-    &:hover { background: $brand-light; }
+    &:hover {
+      background: $brand-light;
+    }
   }
 
   .cc_checkbox_row {
@@ -112,8 +126,13 @@ $brand-light: rgba(86, 74, 252, 0.08);
     font-family: $fontFamily;
     font-size: 13px;
     color: #555;
-    transition: border-color 0.15s, background 0.15s;
-    &:hover { border-color: $brand; background: $brand-light; }
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+    &:hover {
+      border-color: $brand;
+      background: $brand-light;
+    }
 
     .cc_radio_dot {
       width: 14px;
@@ -122,7 +141,9 @@ $brand-light: rgba(86, 74, 252, 0.08);
       border: 2px solid #bbb;
       background: white;
       flex-shrink: 0;
-      transition: background 0.15s, border-color 0.15s;
+      transition:
+        background 0.15s,
+        border-color 0.15s;
     }
   }
 
@@ -150,7 +171,9 @@ $brand-light: rgba(86, 74, 252, 0.08);
     gap: 8px;
     padding: 4px 8px;
     border-radius: 6px;
-    &:hover { background: $brand-light; }
+    &:hover {
+      background: $brand-light;
+    }
   }
 
   .cc_icon_row {
@@ -171,8 +194,13 @@ $brand-light: rgba(86, 74, 252, 0.08);
     font-family: $fontFamily;
     font-size: 11px;
     color: #777;
-    transition: border-color 0.15s, background 0.15s;
-    &:hover { border-color: $brand; background: $brand-light; }
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+    &:hover {
+      border-color: $brand;
+      background: $brand-light;
+    }
   }
 
   .cc_icon_active {
@@ -300,4 +328,98 @@ $brand-light: rgba(86, 74, 252, 0.08);
       color: white;
     }
   }
+}
+
+.cc_icon_section_wrap {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.cc_icon_group_block {
+  border: 1.5px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fafafa;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #564afc;
+    background: #f3f1ff;
+  }
+}
+
+.cc_icon_group_name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #564afc;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ede9ff;
+}
+
+.cc_icon_group_row {
+  display: flex;
+  gap: 10px;
+}
+
+.cc_icon_group_item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  min-width: 76px;
+  background: #fff;
+  transition:
+    border-color 0.18s,
+    background 0.18s,
+    box-shadow 0.18s;
+  position: relative;
+}
+
+.cc_icon_group_active {
+  border-color: #564afc !important;
+  background: #ede9ff !important;
+  box-shadow: 0 0 0 2px rgba(86, 74, 252, 0.18);
+}
+
+.cc_icon_group_label {
+  font-size: 10px;
+  color: #555;
+  text-align: center;
+}
+
+.cc_icon_group_badge {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.cc_icon_group_name {
+  display: flex; // ← add
+  align-items: center; // ← add
+  font-size: 11px;
+  font-weight: 600;
+  color: #564afc;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ede9ff;
+}
+
+// add this for selected group border highlight
+.cc_icon_group_block_active {
+  border-color: #564afc !important;
+  background: #f3f1ff !important;
+  box-shadow: 0 0 0 2px rgba(86, 74, 252, 0.15);
 }

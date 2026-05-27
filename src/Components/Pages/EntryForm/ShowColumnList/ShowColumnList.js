@@ -30,6 +30,7 @@ import SpliterReport from "./SpliterReport";
 import LargeData from "./LargeData";
 import { useRouter, useSearchParams } from "next/navigation";
 import { payloadToFormulas } from "../FormulaBaseSummary/FormulaBaseSummary";
+import CustomizeAll from "../CustomizeAll/CustomizeAll";
 
 const style = {
   position: "absolute",
@@ -66,6 +67,7 @@ const ShowColumnList = () => {
   const [largeDataColum, setLargeDataColum] = useState();
   const [spliterReportColum, setSpliterReportColum] = useState();
   const [allPrintData, setAllPrintData] = useState();
+  const [actionMaster, setActionMaster] = useState();
   const [loading, setLoading] = useState(false);
   const [spliterFirst, setSpliterFirst] = useState(null);
   const [spliterSecond, setSpliterSecond] = useState(null);
@@ -99,6 +101,7 @@ const ShowColumnList = () => {
           setSelectedDateOptions(activeIds);
           setSpliterReportColum(response?.rd3);
           setAllPrintData(response?.rd4);
+          setActionMaster(response?.rd5);
         }
       } catch (err) {
         console.error("Failed fetching report settings", err);
@@ -434,6 +437,18 @@ const ShowColumnList = () => {
     setEditorOpen(true);
   };
 
+
+  const openCustomizeAll = () => {
+    setActiveItem({
+      kind: "customizeall",
+      title: "Customize All",
+      initialData: spData,
+      spId: spData?.ReportId,
+    });
+    setEditorOpen(true);
+  };
+
+
   const openColCustomize = (col) => {
     setActiveItem({
       kind: "column",
@@ -569,6 +584,33 @@ const ShowColumnList = () => {
                 {spData?.result?.length !== 0 ? (
                   <>
                     <div className="column_list">
+                      <div className={`column_row master_row${editorOpen && activeItem?.kind === "customizeall" ? " active_row" : ""}`}>
+                        <Checkbox
+                          checked={selectedCols.includes("Master Setting")}
+                          disabled
+                        />
+
+                        <Typography className="column_label">
+                          Customize All Filed
+                        </Typography>
+
+                        <>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={openCustomizeAll}
+                            style={{
+                              marginLeft: "auto",
+                              color: "rgb(86, 74, 252)",
+                              borderColor: "rgb(86, 74, 252)",
+                            }}
+                            className="Btn_Customize"
+                          >
+                            Customize
+                          </Button>
+                        </>
+                      </div>
+
                       <div className={`column_row master_row${editorOpen && activeItem?.kind === "master" ? " active_row" : ""}`}>
                         <Checkbox
                           checked={selectedCols.includes("Master Setting")}
@@ -706,7 +748,39 @@ const ShowColumnList = () => {
                   </span>
                 </div>
                 <div className="panel_scroll">
-                  {activeItem?.kind === "master" ? (
+                  {activeItem?.kind === "customizeall" ? (
+                    <CustomizeAll
+                      spId={activeItem.spId}
+                      onClose={closeEditor}
+                      onSave={(updatedPayload) => {
+                        setSpData((prev) => ({
+                          ...prev,
+                          result: prev.result.map((col) => ({
+                            ...col,
+                            Width: updatedPayload.Width ?? col.Width,
+                            HeaderAlign: updatedPayload.HeaderAlign ?? col.HeaderAlign,
+                            ColumnAlign: updatedPayload.ColumnAlign ?? col.ColumnAlign,
+                            FontSize: updatedPayload.FontSize ?? col.FontSize,
+                            GroupChekBox: updatedPayload.GrupChekBox ?? col.GroupChekBox,
+                            DefaultGroupChekBox: updatedPayload.DefaultGrupChekBox ?? col.DefaultGroupChekBox,
+                            HideColumn: updatedPayload.HideColumn ?? col.HideColumn,
+                            NormalFilter: updatedPayload.NormalFilter ?? col.NormalFilter,
+                            ColumnFilter: updatedPayload.ColumnFilter ?? col.ColumnFilter,
+                            DateRangeFilter: updatedPayload.DateRangeFilter ?? col.DateRangeFilter,
+                            MultiSelection: updatedPayload.MultiSelection ?? col.MultiSelection,
+                            RangeFilter: updatedPayload.RangeFilter ?? col.RangeFilter,
+                            SuggestionFilter: updatedPayload.SuggestionFilter ?? col.SuggestionFilter,
+                            SelectDropdownFilter: updatedPayload.SelectDropdownFilter ?? col.SelectDropdownFilter,
+                            ServerSideFilter: updatedPayload.ServerSideFilter ?? col.ServerSideFilter,
+                            IsInFilterSection: updatedPayload.IsInFilterSection ?? col.IsInFilterSection,
+                            IsOnScreenFilter: updatedPayload.IsOnScreenFilter ?? col.IsOnScreenFilter,
+                          })),
+                        }));
+                        setsnackbarUpdateRecodeOpen(true);
+                        setTimeout(() => setsnackbarUpdateRecodeOpen(false), 3000);
+                      }}
+                    />
+                  ) : activeItem?.kind === "master" ? (
                     <CustomizeMaster
                       initialData={spData.master}
                       spId={activeItem.spId}
@@ -762,6 +836,7 @@ const ShowColumnList = () => {
                       setFormulaList={setFormulaList}
                       isFormulaBasedSummary={isFormulaBasedSummary}
                       setIsFormulaBasedSummary={setIsFormulaBasedSummary}
+                      actionMaster={actionMaster}
                     />
                   ) : null}
                 </div>

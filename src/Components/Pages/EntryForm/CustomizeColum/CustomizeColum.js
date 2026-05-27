@@ -17,11 +17,19 @@ import {
 } from "@mui/material";
 import "./CustomizeColum.scss";
 import { CallApi } from "@/apiList/CallApi";
-import { MessageCircle, NotebookPen, Printer } from "lucide-react";
 import ColorPickerPanel from "./ColorPickerPanel/ColorPickerPanel";
 import { toast } from "react-toastify";
 import VivewDataDrawer from "./VivewDataDrawer/VivewDataDrawer";
 import FormulaBaseSummary from "../FormulaBaseSummary/FormulaBaseSummary";
+import {
+  CheckCircle2, XCircle, Pencil, Trash2, Eye,
+  ThumbsUp, ThumbsDown, Download, Printer,
+  MessageCircle, Flag, Lock, NotebookPen,
+  CheckSquare,
+  Square,
+  ToggleRight,
+  ToggleLeft,
+} from "lucide-react";
 
 const defaultField = {
   ColId: null,
@@ -103,6 +111,33 @@ const SlideRight = forwardRef(function SlideRight(props, ref) {
   return <Slide direction="left" ref={ref} {...props} timeout={400} />;
 });
 
+const authIconGroups = [
+  {
+    id: 1,
+    group: "CheckBox",
+    icons: [
+      { name: "Checked", component: <CheckSquare size={18} /> },
+      { name: "Unchecked", component: <Square size={18} /> },
+    ],
+  },
+  {
+    id: 2,
+    group: "Toggle Button",
+    icons: [
+      { name: "ToggleOn", component: <ToggleRight size={18} /> },
+      { name: "ToggleOff", component: <ToggleLeft size={18} /> },
+    ],
+  },
+  {
+    id: 3,
+    group: "Status",
+    icons: [
+      { name: "Active", component: <CheckCircle2 size={18} /> },
+      { name: "Deactive", component: <XCircle size={18} /> },
+    ],
+  },
+];
+
 
 const CustomizeColum = ({
   selectedColumn,
@@ -117,9 +152,11 @@ const CustomizeColum = ({
   setFormulaList,
   isFormulaBasedSummary,
   setIsFormulaBasedSummary,
+  actionMaster
 }) => {
   const clientIpAddress = typeof window !== "undefined" ? sessionStorage.getItem("clientIpAddress") : null;
   const [formData, setFormData] = useState({ ...defaultField });
+  console.log('formData: ', formData);
   const [colorPicker, setColorPicker] = useState({ ...defaultColorPicker });
   const [activeDrawer, setActiveDrawer] = useState(false);
   const [openFormulaSum, setOpenFormulaSum] = useState(false);
@@ -132,6 +169,11 @@ const CustomizeColum = ({
       ReportId: spId,
       IsInFilterSection: base?.IsInFilterSection ? 1 : 0,
       IsOnScreenFilter: base?.IsOnScreenFilter ? 1 : 0,
+      IsAuthAction: base?.IsAuthAction ? true : false,
+      IsAuthActionData: base?.IsAuthActionData || "",
+      IsAuthActionIcon: base?.IsAuthActionIcon || "",
+      IsAuthActionDropdown: base?.IsAuthActionDropdown ? true : false,
+      IsAuthActionDropdownMaster: base?.IsAuthActionDropdownMaster || "",
     }));
 
     setColorPicker({
@@ -256,6 +298,11 @@ const CustomizeColum = ({
       IsOnScreenFilter: formData.IsOnScreenFilter || 0,     // 0 if not selected
       IframeColumnLable: formData.IframeColumnLable || null,     // 0 if not selected
       ViewButtonDataArray: formData?.ViewButtonDataArray,
+      IsAuthAction: formData.IsAuthAction ? 1 : 0,
+      IsAuthActionDropdown: formData.IsAuthActionDropdown ? 1 : 0,
+      IsAuthActionData: formData.IsAuthActionData || "",
+      IsAuthActionIcon: formData.IsAuthActionIcon || "",
+      IsAuthActionDropdownMaster: formData.IsAuthActionDropdownMaster || "",
       ...colorPicker
     };
 
@@ -276,7 +323,12 @@ const CustomizeColum = ({
         onSave({
           ...formData,
           ...colorPicker,
-          IsPositiveNagativeColor: colorPicker.IsPositiveNagativeColor
+          IsPositiveNagativeColor: colorPicker.IsPositiveNagativeColor,
+          IsAuthAction: formData.IsAuthAction ? 1 : 0,
+          IsAuthActionDropdown: formData.IsAuthActionDropdown ? 1 : 0,
+          IsAuthActionData: formData.IsAuthActionData || "",
+          IsAuthActionIcon: formData.IsAuthActionIcon || "",
+          IsAuthActionDropdownMaster: formData.IsAuthActionDropdownMaster || "",
         });
       }
     } catch (err) {
@@ -295,7 +347,7 @@ const CustomizeColum = ({
     <div className="Customize_Colum_Full_main" style={{ position: "relative", overflow: "hidden" }}>
       {/* ── Tab bar ── */}
       <div className="cc_tab_bar">
-        {["General", "Filter", "Summary", "Navigation", "Iframe"].map((label, i) => (
+        {["General", "Filter", "Summary", "Navigation", "Iframe", "Action"].map((label, i) => (
           <button
             key={label}
             className={`cc_tab${activeTab === i ? " cc_tab_active" : ""}`}
@@ -580,6 +632,122 @@ const CustomizeColum = ({
             </div>
           </div>
         )}
+
+        {activeTab === 5 && (
+          <div className="cc_tab_panel">
+
+
+            <div className="cc_section_label" style={{ marginTop: 8 }}>Auth Action Data Column</div>
+            <FormControl size="small" style={{ width: "60%", marginTop: 6 }}>
+              <InputLabel>Select Column (FieldName)</InputLabel>
+              <Select
+                label="Select Column (FieldName)"
+                name="IsAuthActionData"
+                value={formData.IsAuthActionData || ""}
+                onChange={handleInputChange}
+              >
+                <MenuItem value="">--Select--</MenuItem>
+                {allColumData?.map((item) => (
+                  <MenuItem key={item.ColId} value={item.FieldName}>
+                    {item.FieldName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+
+
+            <div style={{ display: 'flex', gap: '50px' }}>
+              <div>
+                <div className="cc_section_label" style={{ marginTop: 20 }}>Auth Action</div>
+                <label className="cc_bool_item" style={{ marginBottom: 12 }}>
+                  <Checkbox
+                    name="IsAuthAction"
+                    checked={!!formData.IsAuthAction}
+                    onChange={handleCheckboxChange}
+                    size="small"
+                    sx={{ p: "2px" }}
+                  />
+                  <span className="chekbox_title_value">IsAuthAction</span>
+                </label>
+                <div className="cc_section_label" style={{ marginTop: 20 }}>Auth Action Icone On Column</div>
+                <div className="cc_icon_section_wrap">
+                  {authIconGroups.map((group) => {
+                    const isGroupSelected = Number(formData.IsAuthActionIcon) === group.id; // ← whole group
+
+                    return (
+                      <div
+                        key={group.id}
+                        className={`cc_icon_group_block${isGroupSelected ? " cc_icon_group_block_active" : ""}`}
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            IsAuthActionIcon: Number(prev.IsAuthActionIcon) === group.id ? "" : group.id,
+                          }))
+                        }
+                      >
+                        <div className="cc_icon_group_name">
+                          {group.group}
+                          <span className="cc_icon_group_badge" style={{ marginLeft: "auto" }}>
+                            {isGroupSelected ? (
+                              <CheckCircle2 size={15} color="#22c55e" strokeWidth={2.5} />
+                            ) : (
+                              <XCircle size={15} color="#ef4444" strokeWidth={2.5} />
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="cc_icon_group_row">
+                          {group.icons.map((icon) => (
+                            <div key={icon.name} className={`cc_icon_group_item${isGroupSelected ? " cc_icon_group_active" : ""}`}>
+                              {React.cloneElement(icon.component, {
+                                color: isGroupSelected ? "#564afc" : "#888",
+                              })}
+                              <span className="cc_icon_group_label">{icon.name}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div style={{ width: '50%' }}>
+                <div className="cc_section_label" style={{ marginTop: 20 }}>Auth Action Dropdown</div>
+                <label className="cc_bool_item" style={{ marginBottom: 12 }}>
+                  <Checkbox
+                    name="IsAuthActionDropdown"
+                    checked={!!formData.IsAuthActionDropdown}
+                    onChange={handleCheckboxChange}
+                    size="small"
+                    sx={{ p: "2px" }}
+                  />
+                  <span className="chekbox_title_value">IsAuthActionDropdown</span>
+                </label>
+
+                <div className="cc_section_label" style={{ marginTop: 20 }}>Auth Action Master Selection</div>
+                <FormControl size="small" style={{ width: "60%", marginTop: 6 }}>
+                  <InputLabel>Master Selection</InputLabel>
+                  <Select
+                    label="Master Selection"
+                    name="IsAuthActionDropdownMaster"
+                    value={formData.IsAuthActionDropdownMaster || ""}
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="">--Select--</MenuItem>
+                    {actionMaster?.map((item) => (
+                      <MenuItem key={item.id} value={item.MasterTableName}>
+                        {item.MasterTableName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="button-group">
@@ -627,8 +795,6 @@ const CustomizeColum = ({
           formData={formData}
         />
       </Drawer>
-
-
 
       <Drawer
         anchor="right"
