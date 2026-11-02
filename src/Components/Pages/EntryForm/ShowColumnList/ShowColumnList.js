@@ -68,6 +68,7 @@ const ShowColumnList = () => {
   const [spliterReportColum, setSpliterReportColum] = useState();
   const [allPrintData, setAllPrintData] = useState();
   const [actionMaster, setActionMaster] = useState();
+  const [isRightBaseColumMaster, setIsRightBaseColumMaster] = useState();
   const [loading, setLoading] = useState(false);
   const [spliterFirst, setSpliterFirst] = useState(null);
   const [spliterSecond, setSpliterSecond] = useState(null);
@@ -76,8 +77,10 @@ const ShowColumnList = () => {
   const [otherSpliterSideData2, setOtherSpliterSideData2] = useState();
   const [iframeMaster, setIframeMaster] = useState();
   const [formulaList, setFormulaList] = useState([]);
+  const [checkedColIds, setCheckedColIds] = useState([]);
   const [isFormulaBasedSummary, setIsFormulaBasedSummary] = useState(false);
   const clientIpAddress = typeof window !== "undefined" ? sessionStorage.getItem("clientIpAddress") : null;
+
   useEffect(() => {
     let AllData = JSON.parse(sessionStorage.getItem("reportVarible"));
     const getLargeColumData = async () => {
@@ -102,6 +105,7 @@ const ShowColumnList = () => {
           setSpliterReportColum(response?.rd3);
           setAllPrintData(response?.rd4);
           setActionMaster(response?.rd5);
+          setIsRightBaseColumMaster(JSON.parse(response?.rd6[0]?.Flag_Detail));
         }
       } catch (err) {
         console.error("Failed fetching report settings", err);
@@ -196,6 +200,10 @@ const ShowColumnList = () => {
             }
           }
 
+          if (response?.rd[0]?.FilterPageMultiDateOption) {
+            initialSelected.push("Filter Page Multi Date Option");
+          }
+
           if (response?.rd[0]?.IsSpliterReport) {
             initialSelected.push("Spliter Report");
             if (response?.rd[0]?.DateMonthRestriction) {
@@ -230,6 +238,22 @@ const ShowColumnList = () => {
 
           if (response?.rd[0]?.SpliterReportAllDataButton) {
             initialSelected.push("SpliterReportAllDataButton");
+          }
+
+          if (response?.rd[0]?.CustomizeUserFirstPanelData) {
+            initialSelected.push("CustomizeUserFirstPanelData");
+          }
+
+          if (response?.rd[0]?.SpliterReportWithoutDate) {
+            initialSelected.push("SpliterReportWithoutDate");
+          }
+
+          if (response?.rd[0]?.IsSpliterServerSide) {
+            initialSelected.push("IsSpliterServerSide");
+          }
+
+           if (response?.rd[0]?.IsSpliterSecondPanelOn) {
+            initialSelected.push("IsSpliterSecondPanelOn");
           }
 
           setAllDateOptionsShow(response?.rd[0]?.ServerSideDateWiseFilter);
@@ -306,9 +330,10 @@ const ShowColumnList = () => {
   const handleSaveAll = async () => {
     if (!spData?.ReportId || !spData?.result) return;
     try {
-      const updatedCols = spData.result.map((col) => ({
+      const updatedCols = spData.result.map((col, index) => ({
         ColId: col.ColId,
         IsVisible: selectedCols.includes(col.HeaderName) ? 1 : 0,
+        DisplayOrder: col.DisplayOrder ?? index + 1,  // ✅ persist drag order on save
       }));
       let AllData = JSON.parse(sessionStorage.getItem("reportVarible"));
 
@@ -361,6 +386,11 @@ const ShowColumnList = () => {
           p: JSON.stringify({
             ReportId: spData?.ReportId,
             LargeDataCount: Number(largestLength),
+            FilterPageMultiDateOption:
+              selectedCols.includes("Largest Data Report") &&
+                selectedCols.includes("Filter Page Multi Date Option")
+                ? 1
+                : 0,
             Columns: largeDataColum.map((col) => ({
               ColId: col.ColId,
               IsLargeDataGroup: col.IsLargeDataGroup ? 1 : 0,
@@ -392,6 +422,10 @@ const ShowColumnList = () => {
           SpliterFirstPanelAll: selectedCols.includes("SpliterFirstPanelAll") ? 1 : 0,
           SpliterSecondPanelAll: selectedCols.includes("SpliterSecondPanelAll") ? 1 : 0,
           SpliterReportAllDataButton: selectedCols.includes("SpliterReportAllDataButton") ? 1 : 0,
+          CustomizeUserFirstPanelData: selectedCols.includes("CustomizeUserFirstPanelData") ? 1 : 0,
+          SpliterReportWithoutDate: selectedCols.includes("SpliterReportWithoutDate") ? 1 : 0,
+          IsSpliterServerSide: selectedCols.includes("IsSpliterServerSide") ? 1 : 0,
+          IsSpliterSecondPanelOn: selectedCols.includes("IsSpliterSecondPanelOn") ? 1 : 0,
           SpliterFirstPanel: spliterFirst || "",
           SpliterSecondPanel: spliterSecond || "",
           SpliterSecondPanelSecondData: spliterSecondPanelSecondData || "",
@@ -444,6 +478,8 @@ const ShowColumnList = () => {
       title: "Customize All",
       initialData: spData,
       spId: spData?.ReportId,
+      checkedColIds: checkedColIds,          // ← pass selected
+      allColIds: spData?.result?.map(c => c.ColId) ?? [],  // ← pass all
     });
     setEditorOpen(true);
   };
@@ -505,24 +541,22 @@ const ShowColumnList = () => {
 
   const handleDragEnd = async (result) => {
     if (!result.destination) return;
+    if (result.source.index === result.destination.index) return; // no-op
 
-    setSpData((prev) => {
-      const items = [...prev.result];
+    // 1. compute new order outside setState
+    const items = [...spData.result];
+    const [movedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, movedItem);
+    const updatedItems = items.map((item, index) => ({
+      ...item,
+      DisplayOrder: index + 1,
+    }));
 
-      const [movedItem] = items.splice(result.source.index, 1);
-      items.splice(result.destination.index, 0, movedItem);
+    // 2. update state
+    setSpData((prev) => ({ ...prev, result: updatedItems }));
 
-      const updatedItems = items.map((item, index) => ({
-        ...item,
-        DisplayOrder: index + 1,
-      }));
-      saveDisplayOrder(prev.ReportId, updatedItems);
-
-      return {
-        ...prev,
-        result: updatedItems,
-      };
-    });
+    // 3. save to API after state is set
+    await saveDisplayOrder(spData.ReportId, updatedItems);
   };
 
   const saveDisplayOrder = async (reportId, updatedItems) => {
@@ -579,45 +613,39 @@ const ShowColumnList = () => {
         {!loading && (
           <div className="customize_panels_wrapper">
             <div className="customize_body">
-              <div className="panel_header">Columns</div>
+              <div className="panel_header">
+                <p>
+                  Columns
+                </p>
+
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={openCustomizeAll}
+                  style={{
+                    marginLeft: "auto",
+                    color: "rgb(86, 74, 252)",
+                    borderColor: "rgb(86, 74, 252)",
+                  }}
+                  className="Btn_Customize"
+                >
+                  Customize All
+                </Button>
+              </div>
               <div className="panel_scroll">
                 {spData?.result?.length !== 0 ? (
                   <>
                     <div className="column_list">
-                      <div className={`column_row master_row${editorOpen && activeItem?.kind === "customizeall" ? " active_row" : ""}`}>
+                      <div className={`column_row master_row${editorOpen && activeItem?.kind === "master" ? " active_row" : ""}`}
+                        style={{
+                          backgroundColor: '#bcc1ff'
+                        }}>
                         <Checkbox
                           checked={selectedCols.includes("Master Setting")}
                           disabled
                         />
 
-                        <Typography className="column_label">
-                          Customize All Filed
-                        </Typography>
-
-                        <>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={openCustomizeAll}
-                            style={{
-                              marginLeft: "auto",
-                              color: "rgb(86, 74, 252)",
-                              borderColor: "rgb(86, 74, 252)",
-                            }}
-                            className="Btn_Customize"
-                          >
-                            Customize
-                          </Button>
-                        </>
-                      </div>
-
-                      <div className={`column_row master_row${editorOpen && activeItem?.kind === "master" ? " active_row" : ""}`}>
-                        <Checkbox
-                          checked={selectedCols.includes("Master Setting")}
-                          disabled
-                        />
-
-                        <Typography className="column_label">
+                        <Typography className="column_label" style={{ color: 'black' }}>
                           Report Options
                         </Typography>
 
@@ -628,8 +656,8 @@ const ShowColumnList = () => {
                             onClick={openMasterCustomize}
                             style={{
                               marginLeft: "auto",
-                              color: "rgb(86, 74, 252)",
-                              borderColor: "rgb(86, 74, 252)",
+                              color: "black",
+                              borderColor: "black",
                             }}
                             className="Btn_Customize"
                           >
@@ -647,78 +675,78 @@ const ShowColumnList = () => {
                                 {...provided.droppableProps}
                                 className="droppable-columns"
                               >
-                                {spData?.result
-                                  ?.slice()
-                                  ?.sort((a, b) => {
-                                    const da = a.DisplayOrder;
-                                    const db = b.DisplayOrder;
-                                    if (da == null && db == null) return 0;
-                                    if (da == null) return 1;
-                                    if (db == null) return -1;
-                                    return da - db;
-                                  })
-                                  ?.map((col, index) => {
-                                    const label = col.HeaderName;
-                                    const isChecked =
-                                      selectedCols.includes(label);
-
-                                    return (
-                                      <Draggable
-                                        key={col.ColId}
-                                        draggableId={col.ColId.toString()}
-                                        index={index}
-                                      >
-                                        {(provided, snapshot) => (
-                                          <div
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            {...provided.dragHandleProps}
-                                            className={`column_row ${snapshot.isDragging ? "dragging" : ""} ${editorOpen && activeItem?.initialData?.ColId === col.ColId ? "active_row" : ""}`}
-                                            style={{
-                                              display: "flex",
-                                              alignItems: "center",
-                                              background: snapshot.isDragging ? "#f1f1ff" : undefined,
-                                              borderRadius: "6px",
-                                              padding: "6px 10px",
-                                              marginBottom: "6px",
-                                              ...provided.draggableProps.style,
+                                {spData?.result?.map((col, index) => {
+                                  return (
+                                    <Draggable
+                                      key={col.ColId}
+                                      draggableId={col.ColId.toString()}
+                                      index={index}
+                                    >
+                                      {(provided, snapshot) => (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                          className={`column_row ${snapshot.isDragging ? "dragging" : ""} ${editorOpen && activeItem?.initialData?.ColId === col.ColId ? "active_row" : ""}`}
+                                          style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            background: snapshot.isDragging ? "#f1f1ff" : undefined,
+                                            borderRadius: "6px",
+                                            padding: "6px 10px",
+                                            marginBottom: "6px",
+                                            ...provided.draggableProps.style,
+                                          }}
+                                          onClick={() => {
+                                            setCheckedColIds((prev) =>
+                                              prev.includes(col.ColId)
+                                                ? prev.filter((id) => id !== col.ColId)
+                                                : [...prev, col.ColId]
+                                            );
+                                          }}
+                                        >
+                                          <Checkbox
+                                            checked={checkedColIds.includes(col.ColId)}
+                                            onChange={() => { }}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setCheckedColIds((prev) =>
+                                                prev.includes(col.ColId)
+                                                  ? prev.filter((id) => id !== col.ColId)
+                                                  : [...prev, col.ColId]
+                                              );
                                             }}
+                                          />
+                                          <Typography className="column_label">
+                                            {col.HeaderName}
+                                            <span style={{ color: '#a1a1a1', fontSize: '10px', display: 'block' }}>
+                                              {col?.HideColumn && "HideColum"}
+                                            </span>
+                                          </Typography>
+
+                                          <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              openColCustomize(col);
+                                            }}
+                                            style={{
+                                              marginLeft: "auto",
+                                              color: "rgb(86, 74, 252)",
+                                              borderColor:
+                                                "rgb(86, 74, 252)",
+                                            }}
+                                            className="Btn_Customize"
                                           >
-                                            <Checkbox
-                                              checked={isChecked}
-                                              onChange={() =>
-                                                handleCheckboxChange(label)
-                                              }
-                                            />
-                                            <Typography className="column_label">
-                                              {col.HeaderName}
-                                              {/* - {col?.DisplayOrder} */}
-                                            </Typography>
-                                            {isChecked && (
-                                              <>
-                                                <Button
-                                                  variant="outlined"
-                                                  size="small"
-                                                  onClick={() =>
-                                                    openColCustomize(col)
-                                                  }
-                                                  style={{
-                                                    marginLeft: "auto",
-                                                    color: "rgb(86, 74, 252)",
-                                                    borderColor:
-                                                      "rgb(86, 74, 252)",
-                                                  }}
-                                                  className="Btn_Customize"
-                                                >
-                                                  Customize
-                                                </Button>
-                                              </>
-                                            )}
-                                          </div>
-                                        )}
-                                      </Draggable>
-                                    );
-                                  })}
+                                            Customize
+                                          </Button>
+                                        </div>
+                                      )
+                                      }
+                                    </Draggable>
+                                  );
+                                })}
                                 {provided.placeholder}
                               </div>
                             );
@@ -751,33 +779,45 @@ const ShowColumnList = () => {
                   {activeItem?.kind === "customizeall" ? (
                     <CustomizeAll
                       spId={activeItem.spId}
+                      checkedColIds={activeItem.checkedColIds}   // ← add
+                      allColIds={activeItem.allColIds}           // ← add
                       onClose={closeEditor}
                       onSave={(updatedPayload) => {
+                        const wasAll = updatedPayload.CustomizeAll === 1;
+                        const targetIds = wasAll ? null : updatedPayload.ColumnId; // null = all
+
                         setSpData((prev) => ({
                           ...prev,
-                          result: prev.result.map((col) => ({
-                            ...col,
-                            Width: updatedPayload.Width ?? col.Width,
-                            HeaderAlign: updatedPayload.HeaderAlign ?? col.HeaderAlign,
-                            ColumnAlign: updatedPayload.ColumnAlign ?? col.ColumnAlign,
-                            FontSize: updatedPayload.FontSize ?? col.FontSize,
-                            GroupChekBox: updatedPayload.GrupChekBox ?? col.GroupChekBox,
-                            DefaultGroupChekBox: updatedPayload.DefaultGrupChekBox ?? col.DefaultGroupChekBox,
-                            HideColumn: updatedPayload.HideColumn ?? col.HideColumn,
-                            NormalFilter: updatedPayload.NormalFilter ?? col.NormalFilter,
-                            ColumnFilter: updatedPayload.ColumnFilter ?? col.ColumnFilter,
-                            DateRangeFilter: updatedPayload.DateRangeFilter ?? col.DateRangeFilter,
-                            MultiSelection: updatedPayload.MultiSelection ?? col.MultiSelection,
-                            RangeFilter: updatedPayload.RangeFilter ?? col.RangeFilter,
-                            SuggestionFilter: updatedPayload.SuggestionFilter ?? col.SuggestionFilter,
-                            SelectDropdownFilter: updatedPayload.SelectDropdownFilter ?? col.SelectDropdownFilter,
-                            ServerSideFilter: updatedPayload.ServerSideFilter ?? col.ServerSideFilter,
-                            IsInFilterSection: updatedPayload.IsInFilterSection ?? col.IsInFilterSection,
-                            IsOnScreenFilter: updatedPayload.IsOnScreenFilter ?? col.IsOnScreenFilter,
-                          })),
+                          result: prev.result.map((col) => {
+                            // skip cols that weren't targeted
+                            if (!wasAll && !targetIds.includes(col.ColId)) return col;
+
+                            return {
+                              ...col,
+                              Width: updatedPayload.Width ?? col.Width,
+                              HeaderAlign: updatedPayload.HeaderAlign ?? col.HeaderAlign,
+                              ColumnAlign: updatedPayload.ColumnAlign ?? col.ColumnAlign,
+                              FontSize: updatedPayload.FontSize ?? col.FontSize,
+                              GroupChekBox: updatedPayload.GrupChekBox ?? col.GroupChekBox,
+                              DefaultGroupChekBox: updatedPayload.DefaultGrupChekBox ?? col.DefaultGroupChekBox,
+                              HideColumn: updatedPayload.HideColumn ?? col.HideColumn,
+                              NormalFilter: updatedPayload.NormalFilter ?? col.NormalFilter,
+                              ColumnFilter: updatedPayload.ColumnFilter ?? col.ColumnFilter,
+                              DateRangeFilter: updatedPayload.DateRangeFilter ?? col.DateRangeFilter,
+                              MultiSelection: updatedPayload.MultiSelection ?? col.MultiSelection,
+                              RangeFilter: updatedPayload.RangeFilter ?? col.RangeFilter,
+                              SuggestionFilter: updatedPayload.SuggestionFilter ?? col.SuggestionFilter,
+                              SelectDropdownFilter: updatedPayload.SelectDropdownFilter ?? col.SelectDropdownFilter,
+                              ServerSideFilter: updatedPayload.ServerSideFilter ?? col.ServerSideFilter,
+                              IsInFilterSection: updatedPayload.IsInFilterSection ?? col.IsInFilterSection,
+                              IsOnScreenFilter: updatedPayload.IsOnScreenFilter ?? col.IsOnScreenFilter,
+                            };
+                          }),
                         }));
+                        setCheckedColIds([]);
                         setsnackbarUpdateRecodeOpen(true);
                         setTimeout(() => setsnackbarUpdateRecodeOpen(false), 3000);
+                        closeEditor();
                       }}
                     />
                   ) : activeItem?.kind === "master" ? (
@@ -837,6 +877,7 @@ const ShowColumnList = () => {
                       isFormulaBasedSummary={isFormulaBasedSummary}
                       setIsFormulaBasedSummary={setIsFormulaBasedSummary}
                       actionMaster={actionMaster}
+                      isRightBaseColumMaster={isRightBaseColumMaster}
                     />
                   ) : null}
                 </div>
@@ -882,7 +923,6 @@ const ShowColumnList = () => {
                   spliterSecond={spliterSecond}
                   spliterSecondPanelSecondData={spliterSecondPanelSecondData}
                   handleOpen={handleOpen}
-                  allDateOptionsShow={allDateOptionsShow}
                   handleToggleFilterOption={handleToggleFilterOption}
                   allDateOptions={allDateOptions}
                   selectedDateOptions={selectedDateOptions}
@@ -952,7 +992,7 @@ const ShowColumnList = () => {
           </Box>
         </Modal>
       </div>
-    </div>
+    </div >
   );
 };
 

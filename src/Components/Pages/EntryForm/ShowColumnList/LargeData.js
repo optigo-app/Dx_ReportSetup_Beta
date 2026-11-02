@@ -95,14 +95,27 @@ const LargeData = ({
 
             {selectedCols?.includes("Largest Data Report") && (
                 <div className="LargeData_Report_DateSection">
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <Checkbox
-                            checked={allDateOptionsShow}
-                            onChange={handleToggleFilterOption}
-                        />
-                        <Typography className="column_label">
-                            Filter Page Date Option
-                        </Typography>
+                    <div style={{ display: 'flex', gap: '50px' }}>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                            <Checkbox
+                                checked={allDateOptionsShow}
+                                onChange={handleToggleFilterOption}
+                            />
+                            <Typography className="column_label">
+                                Filter Page Date Option
+                            </Typography>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                            <Checkbox
+                                checked={selectedCols.includes("Filter Page Multi Date Option")}
+                                onChange={() =>
+                                    handleCheckboxChange("Filter Page Multi Date Option")
+                                }
+                            />
+                            <Typography className="column_label">
+                                Filter Page Multi Date Option
+                            </Typography>
+                        </div>
                     </div>
                     {allDateOptionsShow && (
                         <div>

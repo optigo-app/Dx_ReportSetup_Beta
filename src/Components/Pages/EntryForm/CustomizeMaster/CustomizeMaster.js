@@ -11,7 +11,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  TextField
 } from "@mui/material";
 import "./CustomizeMaster.scss";
 import { CallApi } from "@/apiList/CallApi";
@@ -57,12 +58,17 @@ const SlideRight = forwardRef(function SlideRight(props, ref) {
   return <Slide direction="left" ref={ref} {...props} timeout={400} />;
 });
 
+
 const masterSettingsOrder = [
-  "ChartView", "ImageView", "PrintButton", "MainDateFilter", "AllDataButton", "MultiDateFilter", "ColumnSettingModel",
+  "ChartView", "ImageView", "PrintButton", "GridViewPrintButton", "MainDateFilter", "AllDataButton", "MultiDateFilter", "ColumnSettingModel",
   "FullScreenGridButton", "CheckBoxSelection", "GroupCheckBox", "PriorityMaster",
-  "CurrencyMaster", "ExcelExport", "MailButton",
-  "MakeNewReport", "deafultShowAllData", "OptigoChatBotAi", "IsMainFilterButton", "otherPrintOptionShow"
+  "CurrencyMaster", "MailButton",
+  "MakeNewReport", "deafultShowAllData", "OptigoChatBotAi", "IsMainFilterButton", "otherPrintOptionShow", "IsMultiSorting", "ImageViewSelection", "IsDateFilterServerSide",
+  "isShowPreFilterModal", "ShowMultiTableData", "IsSearchBySingleValue", "IsMainDateFilterMonthRestriction", "IsMainDateFilterMonthRestrictionCount","SummaryCollapseButton"
 ];
+
+const NUMBER_INPUT_KEYS = ["IsMainDateFilterMonthRestrictionCount"];
+// "ExcelExport", 
 
 const DEFAULT_CHART_VIEW = [
   { type: "AreaChart", enabled: false, xAxisColumn: "", yAxisColumn: "" },
@@ -336,7 +342,8 @@ const SvgIconSection = ({ spData, svgRows, setSvgRows }) => {
 };
 
 const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirectionMaster, allPrintData, formulaList, isFormulaBasedSummary }) => {
-  console.log('allPrintData: ', allPrintData);
+  console.log('initialData: ', initialData);
+  console.log('spData: ', spData);
   const [masterSettings, setMasterSettings] = useState({});
   const [chartViewData, setChartViewData] = useState(DEFAULT_CHART_VIEW);
   const [imageViewData, setImageViewData] = useState([]);
@@ -344,6 +351,7 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
   const [previewOpen, setPreviewOpen] = useState(false);
   const [openChartType, setOpenChartType] = useState("");
   const [activeDrawer, setActiveDrawer] = useState(null);
+  const [selectedPrintColum, setSelectedPrintColum] = useState("");
   const [selectedPrintMaster, setSelectedPrintMaster] = useState("");
   const [selectedMainPrint, setSelectedMainPrint] = useState("");
   const [selectedDefaultPrint, setSelectedDefaultPrint] = useState("");
@@ -385,6 +393,7 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
     if (spData?.MainPrintColumn) setSelectedMainPrint(spData.MainPrintColumn);
     if (spData?.DefaultPrintColumn) setSelectedDefaultPrintColum(spData.DefaultPrintColumn);
     if (spData?.DefaultPrintName) setSelectedDefaultPrint(spData.DefaultPrintName);
+    if (spData?.IsPrintColumn) setSelectedPrintColum(spData.IsPrintColumn);
   }, [initialData, spId, spData]);
 
   // ── Stable callbacks — no inline arrow functions in JSX ──
@@ -412,6 +421,11 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
     setMasterSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const handleNumberChange = (key, value) => {
+    const onlyDigits = value.replace(/\D/g, "");
+    setMasterSettings((prev) => ({ ...prev, [key]: onlyDigits }));
+  };
+
   const handleAddDataClick = (e, key) => {
     e.preventDefault();
     if (key === "ChartView") setActiveDrawer("chart");
@@ -425,7 +439,8 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
       FieldName: row.value || "", lable: row.lable || "", value: row.value || "",
       fontsizel: row.fontsizel || "", fontsizev: row.fontsizev || "",
       fontweightl: row.fontweightl || "", fontweightv: row.fontweightv || "",
-      displayorder: row.displayorder || ""
+      displayorder: row.displayorder || "",
+      HideShowLableName: row.HideShowLableName || ""
     }));
   };
 
@@ -436,6 +451,7 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
       fontsizel: row.fontsizel || "", fontsizev: row.fontsizev || "",
       fontweightl: row.fontweightl || "", fontweightv: row.fontweightv || "",
       displayorder: row.displayorder || "",
+      HideShowLableName: row.HideShowLableName || "",
       IsHideShowOption: row.IsHideShowOption || "",
     }));
   };
@@ -446,6 +462,13 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
 
     const masterFields = Object.keys(masterSettings).reduce((acc, key) => {
       if (["chartViewData", "imageViewData", "printViewData", "IframeDataArray", "MultiTabDataArray", "SvgIconFilter", "PrintMasterName", "SummaryFormulaArray"].includes(key)) return acc;
+
+      if (NUMBER_INPUT_KEYS.includes(key)) {
+        const num = parseInt(masterSettings[key], 10);
+        acc[key] = Number.isNaN(num) ? 0 : num;   // store as number
+        return acc;
+      }
+
       acc[key] = masterSettings[key] ? 1 : 0;
       return acc;
     }, {});
@@ -456,6 +479,7 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
       MainPrintColumn: selectedMainPrint,
       DefaultPrintColumn: selectedDefaultPrintColum,
       DefaultPrintName: selectedDefaultPrint,
+      IsPrintColumn: selectedPrintColum,
       SummaryFormulaArray: formulasToPayload(formulaList || []),
       IsFormulaBasedSummary: isFormulaBasedSummary ? 1 : 0,
       SvgIconFilter: svgRows,
@@ -498,6 +522,7 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
           DefaultPrintColumn: selectedDefaultPrintColum,
           DefaultPrintName: selectedDefaultPrint,
           MainPrintColumn: selectedMainPrint,
+          IsPrintColumn: selectedPrintColum,
         });
       }
     } catch (err) {
@@ -577,6 +602,22 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
               {masterSettingsOrder
                 .filter((key) => key in masterSettings)
                 .map((key) => {
+                  if (NUMBER_INPUT_KEYS.includes(key)) {
+                    return (
+                      <div key={key} className="cm_chip" style={{ cursor: "default" }}>
+                        <span className="chekbox_title_value" style={{ marginRight: 8 }}>{key}</span>
+                        <TextField
+                          size="small"
+                          type="text"
+                          value={masterSettings[key] ?? ""}
+                          onChange={(e) => handleNumberChange(key, e.target.value)}
+                          inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 3 }}
+                          sx={{ width: 80, ml: "auto" }}
+                          placeholder="0"
+                        />
+                      </div>
+                    );
+                  }
                   const isChecked = Boolean(masterSettings[key]);
                   const hasAddData = ADD_DATA_KEYS.includes(key);
                   return (
@@ -619,6 +660,22 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
             <p className="cm_section_label">Print Settings</p>
 
             <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+              <FormControl size="small" sx={{ minWidth: 220 }}>
+                <InputLabel>Select Print Column</InputLabel>
+                <Select
+                  value={selectedPrintColum}
+                  label="Select Print Column"
+                  onChange={(e) => setSelectedPrintColum(e.target.value)}
+                  MenuProps={{ PaperProps: { style: { maxHeight: 500 } } }}
+                >
+                  <MenuItem value="">-- Select --</MenuItem>
+                  {fieldOptions.map((f) => (
+                    <MenuItem key={f} value={f}>{f}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+
               <FormControl size="small" sx={{ minWidth: 220 }}>
                 <InputLabel>Print Template</InputLabel>
                 <Select
@@ -727,17 +784,19 @@ const CustomizeMaster = ({ initialData, spId, onClose, onSave, spData, redirecti
         anchor="right"
         open={Boolean(activeDrawer)}
         onClose={() => setActiveDrawer(null)}
-        TransitionComponent={SlideRight}
         keepMounted
         variant="persistent"
         ModalProps={{ keepMounted: true, disablePortal: true, hideBackdrop: true, style: { position: "absolute" } }}
-        PaperProps={{
-          sx: {
-            position: "absolute",
-            width: activeDrawer === "chart" ? "420px" : "460px",
-            height: "100%", top: 0, right: 0,
-            display: "flex", flexDirection: "column",
-            boxShadow: "-4px 0 20px rgba(0,0,0,0.15)", zIndex: 1300,
+        slots={{ transition: SlideRight }}
+        slotProps={{
+          paper: {
+            sx: {
+              position: "absolute",
+              width: activeDrawer === "chart" ? "420px" : "460px",
+              height: "100%", top: 0, right: 0,
+              display: "flex", flexDirection: "column",
+              boxShadow: "-4px 0 20px rgba(0,0,0,0.15)", zIndex: 1300,
+            },
           },
         }}
       >

@@ -12,15 +12,12 @@ export default function Home() {
 }
 
 // find . -mindepth 1 -delete
-// pm2 list 
-// npm i -f
-// npm run build && pm2 restart "90099" && pm2 save 
 
 // dxreportsetup.web
-// R50B3 : 6007 - 24
-// local76 : 6009 - 26
 
-//dxreportseup.optigoapps.com
-//R76 : 5016
-//R76BETA : 5017
+// beta : 6007 - 29
+// npm run build && pm2 restart 27 && pm2 save 
 
+// dxreportseup.optigoapps.com
+// R76 : 5016
+// R76BETA : 5017

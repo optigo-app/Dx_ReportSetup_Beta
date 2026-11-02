@@ -148,15 +148,17 @@ const FormulaRow = ({ formula, columns, onChange, onDelete }) => {
             </button>
             {colOpen && (
               <div className="fbs_col_dropdown">
-                {columns.map((col) => (
-                  <div
-                    key={col.ColId}
-                    className="fbs_col_option"
-                    onClick={() => addToken(col.FieldName)}
-                  >
-                    {col.HeaderName || col.FieldName}
-                  </div>
-                ))}
+                {columns
+                  .filter((col) => col.ColumnType === "Number")
+                  .map((col) => (
+                    <div
+                      key={col.ColId}
+                      className="fbs_col_option"
+                      onClick={() => addToken(col.FieldName)}
+                    >
+                      {col.HeaderName || col.FieldName}
+                    </div>
+                  ))}
               </div>
             )}
           </div>

@@ -15,14 +15,14 @@ export const CommonAPI = async (body) => {
     let AllData = JSON.parse(sessionStorage.getItem("reportVarible"));
     const headerOnline = {
       Yearcode: `${AllData?.YearCode}`,
-      version: `${atob(AllData?.cuVer)}`,
+      version: `${atob(AllData?.dxver)}`,
       sv: `${atob(AllData?.SV)}`,
       sp: 34,
     };
 
     const headerLocal = {
       Yearcode: `${AllData?.YearCode}`,
-      version: `${atob(AllData?.cuVer)}`,
+      version: `${atob(AllData?.dxver)}`,
       sv: `${atob(AllData?.SV)}`,
       sp: 34,
     };

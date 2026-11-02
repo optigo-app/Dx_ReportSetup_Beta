@@ -1,6 +1,5 @@
 @use "../../../sass/Variable.scss" as *;
 
-
 $brand: rgb(86, 74, 252);
 $brand-light: rgba(86, 74, 252, 0.08);
 $brand-dark: rgb(66, 54, 220);
@@ -26,27 +25,18 @@ $brand-dark: rgb(66, 54, 220);
       margin: 0;
       letter-spacing: 0.3px;
     }
-
-    .header_add_btn {
-      font-family: $fontFamily;
-      background: rgba(255,255,255,0.15) !important;
-      color: white !important;
-      border: 1px solid rgba(255,255,255,0.4) !important;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 5px 14px;
-      transition: background 0.2s;
-      &:hover {
-        background: rgba(255,255,255,0.25) !important;
-      }
-    }
   }
 
   .report_list_body {
-    max-width: 860px;
-    margin: 0 auto;
+    width: 45%;
     padding: 20px 16px;
+  }
+
+  .multireport_list_body {
+    width: 30%;
+    padding: 20px 16px;
+    
+    background-color: #f1f1f4;
   }
 
   .report_list_toolbar {
@@ -60,6 +50,24 @@ $brand-dark: rgb(66, 54, 220);
       font-size: 13px;
       color: #888;
       font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 25px;
+
+      .header_add_btn {
+        font-family: $fontFamily;
+        background: rgba(164, 143, 236, 0.15) !important;
+        color:rgb(74, 2, 243) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 5px 14px;
+        transition: background 0.2s;
+        &:hover {
+          background: rgba(88, 28, 226, 0.25) !important;
+        }
+      }
     }
   }
 
@@ -71,10 +79,19 @@ $brand-dark: rgb(66, 54, 220);
     overflow-y: auto;
     padding-right: 4px;
 
-    &::-webkit-scrollbar { width: 3px; }
-    &::-webkit-scrollbar-track { background: transparent; }
-    &::-webkit-scrollbar-thumb { background: $brand; border-radius: 10px; }
-    &::-webkit-scrollbar-thumb:hover { background: $brand-dark; }
+    &::-webkit-scrollbar {
+      width: 3px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: $brand;
+      border-radius: 10px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: $brand-dark;
+    }
     scrollbar-width: thin;
     scrollbar-color: $brand transparent;
   }
@@ -87,7 +104,9 @@ $brand-dark: rgb(66, 54, 220);
     border-radius: 10px;
     overflow: hidden;
     min-height: 60px;
-    transition: box-shadow 0.18s, border-color 0.18s;
+    transition:
+      box-shadow 0.18s,
+      border-color 0.18s;
     &:hover {
       box-shadow: 0 2px 12px rgba(86, 74, 252, 0.12);
       border-color: rgba(86, 74, 252, 0.3);

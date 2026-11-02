@@ -41,29 +41,29 @@ const ALIGN_OPTS = ["left", "center", "right"];
 const FONT_SIZE_OPTS = ["10", "12", "14", "16", "18", "20"];
 
 const BOOL_FIELDS = [
-  { key: "GrupChekBox",           label: "Group CheckBox" },
-  { key: "DefaultGrupChekBox",    label: "Default Group CheckBox" },
-  { key: "HideColumn",            label: "Hide Column" },
+  { key: "GrupChekBox", label: "Group CheckBox" },
+  { key: "DefaultGrupChekBox", label: "Default Group CheckBox" },
+  { key: "HideColumn", label: "Hide Column" },
 ];
 
 const FILTER_FIELDS = [
-  { key: "NormalFilter",          label: "Normal Filter" },
-  { key: "ColumnFilter",          label: "Column Filter" },
-  { key: "DateRangeFilter",       label: "Date Range Filter" },
-  { key: "MultiSelection",        label: "Multi Selection" },
-  { key: "RangeFilter",           label: "Range Filter" },
-  { key: "SuggestionFilter",      label: "Suggestion Filter" },
-  { key: "SelectDropdownFilter",  label: "Select Dropdown Filter" },
-  { key: "ServerSideFilter",      label: "Server Side Filter" },
+  { key: "NormalFilter", label: "Normal Filter" },
+  { key: "ColumnFilter", label: "Column Filter" },
+  { key: "DateRangeFilter", label: "Date Range Filter" },
+  { key: "MultiSelection", label: "Multi Selection" },
+  { key: "RangeFilter", label: "Range Filter" },
+  { key: "SuggestionFilter", label: "Suggestion Filter" },
+  { key: "SelectDropdownFilter", label: "Select Dropdown Filter" },
+  { key: "ServerSideFilter", label: "Server Side Filter" },
 ];
 
 const FILTER_PLACEMENT = [
-  { key: "IsInFilterSection",  label: "In Filter Section" },
-  { key: "IsOnScreenFilter",   label: "On Screen Filter" },
+  { key: "IsInFilterSection", label: "In Filter Section" },
+  { key: "IsOnScreenFilter", label: "On Screen Filter" },
 ];
 
 // ── Component ────────────────────────────────────────────────────────────────
-const CustomizeAll = ({ spId, onClose, onSave }) => {
+const CustomizeAll = ({ spId, onClose, onSave, checkedColIds = [], allColIds = [] }) => {
   const [form, setForm] = useState({ ...defaultAll });
   const [saving, setSaving] = useState(false);
 
@@ -96,10 +96,14 @@ const CustomizeAll = ({ spId, onClose, onSave }) => {
     if (!spId) return;
     setSaving(true);
 
+    const isAll = checkedColIds.length === 0;
+
     const AllData = JSON.parse(sessionStorage.getItem("reportVarible") || "{}");
 
     const payload = {
       ReportId: spId,
+      CustomizeAll: isAll ? 1 : 0,
+      ColumnId: isAll ? allColIds : checkedColIds,
       Width: Number(form.Width) || 120,
       HeaderAlign: form.HeaderAlign,
       ColumnAlign: form.ColumnAlign,
@@ -134,7 +138,7 @@ const CustomizeAll = ({ spId, onClose, onSave }) => {
 
     try {
       await CallApi(body);
-      toast.success("All columns updated successfully!", { position: "top-center" });
+      toast.success("columns updated successfully!", { position: "top-center" });
       if (onSave) onSave(payload);
       if (onClose) onClose();
     } catch (err) {

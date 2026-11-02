@@ -6,6 +6,15 @@ import React, { useState, useEffect, useRef } from "react";
 import "./OnReportIframeButton.scss";
 import { X } from "lucide-react";
 
+const emptyIframeRow = () => ({
+    IframeButtonName: "",
+    IframeLableId: "",
+    IframeWidth: "300",
+    IframeHeight: "300",
+    IsRedirectButton: true,
+    DisableCheckboxSelection: true,
+});
+
 const OnReportIframeButton = ({
     spData,
     redirectionMaster,
@@ -14,18 +23,28 @@ const OnReportIframeButton = ({
     onChange
 }) => {
     const [checked, setChecked] = useState(false);
-    const [rows, setRows] = useState([{ IframeButtonName: "", IframeLableId: "" }]);
-    const isFirstRender = useRef(true);
+    const [rows, setRows] = useState([emptyIframeRow()]);
 
-    // Single unified useEffect for initializing state
+    // Only used to avoid re-parsing props on every render when nothing
+    // actually changed (reference-only changes from the parent).
+    const lastSyncedPropsRef = useRef(null);
+
+    // One-time (or source-change) sync FROM props INTO local state.
+    // This effect NEVER calls onChange, so it can't create a cycle.
     useEffect(() => {
         const isOn = currentReportIframeButton ?? spData?.ReportIframeButton;
-        setChecked(!!isOn);
-
         const arr = currentIframeDataArray ?? spData?.IframeDataArray;
 
+        const propsSignature = JSON.stringify({ isOn: !!isOn, arr });
+        if (propsSignature === lastSyncedPropsRef.current) {
+            return;
+        }
+        lastSyncedPropsRef.current = propsSignature;
+
+        setChecked(!!isOn);
+
         if (!arr) {
-            setRows([{ IframeButtonName: "", IframeLableId: "" }]);
+            setRows([emptyIframeRow()]);
             return;
         }
 
@@ -35,45 +54,60 @@ const OnReportIframeButton = ({
             if (Array.isArray(parsed) && parsed.length > 0) {
                 setRows(parsed.map((item) => ({
                     IframeButtonName: item.IframeButtonName || item.buttonName || "",
-                    IframeLableId: item.IframeLableId || item.IframeTypeId || ""
+                    IframeLableId: item.IframeLableId || item.IframeTypeId || "",
+                    IframeWidth: item.IframeWidth ?? "300",
+                    IframeHeight: item.IframeHeight ?? "300",
+                    IsRedirectButton: item.IsRedirectButton ?? true,
+                    DisableCheckboxSelection: item.DisableCheckboxSelection ?? true,
                 })));
             } else {
-                setRows([{ IframeButtonName: "", IframeLableId: "" }]);
+                setRows([emptyIframeRow()]);
             }
         } catch {
-            setRows([{ IframeButtonName: "", IframeLableId: "" }]);
+            setRows([emptyIframeRow()]);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentReportIframeButton, currentIframeDataArray, spData]);
 
-    // Notify parent — skip on first render to avoid overwriting parent state
-    useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            return;
-        }
+    // Helper: notify parent with an explicit, freshly computed payload.
+    // Called ONLY from user-driven handlers below — never from an effect.
+    const notifyParent = (nextChecked, nextRows) => {
         if (!onChange) return;
         onChange({
-            ReportIframeButton: checked ? 1 : 0,
-            IframeDataArray: checked ? rows : []
+            ReportIframeButton: nextChecked ? 1 : 0,
+            IframeDataArray: nextChecked ? nextRows : []
         });
-    }, [checked, rows]);
+    };
 
-    const handleCheckbox = (e) => setChecked(e.target.checked);
+    const handleCheckbox = (e) => {
+        const value = e.target.checked;
+        setChecked(value);
+        notifyParent(value, rows);
+    };
 
     const handleChange = (index, field, value) => {
         setRows((prev) => {
             const updated = [...prev];
             updated[index] = { ...updated[index], [field]: value };
+            notifyParent(checked, updated);
             return updated;
         });
     };
 
-    const addMore = () => setRows((prev) => [...prev, { IframeButtonName: "", IframeLableId: "" }]);
+    const addMore = () => {
+        setRows((prev) => {
+            const updated = [...prev, emptyIframeRow()];
+            notifyParent(checked, updated);
+            return updated;
+        });
+    };
 
     const removeRow = (index) => {
         setRows((prev) => {
-            const updated = prev.filter((_, i) => i !== index);
-            return updated.length === 0 ? [{ IframeButtonName: "", IframeLableId: "" }] : updated;
+            const filtered = prev.filter((_, i) => i !== index);
+            const updated = filtered.length === 0 ? [emptyIframeRow()] : filtered;
+            notifyParent(checked, updated);
+            return updated;
         });
     };
 
@@ -90,7 +124,7 @@ const OnReportIframeButton = ({
 
             {checked && (
                 <div className="bottomPanel">
-                    {rows.map((row, index) => (
+                    {rows?.map((row, index) => (
                         <div className="row" key={index}>
                             <TextField
                                 label="Button Name"
@@ -98,6 +132,7 @@ const OnReportIframeButton = ({
                                 onChange={(e) => handleChange(index, "IframeButtonName", e.target.value)}
                                 sx={{ '& .MuiInputBase-root': { height: 40 } }}
                             />
+
                             <FormControl size="small">
                                 <InputLabel>Select Iframe</InputLabel>
                                 <Select
@@ -117,6 +152,41 @@ const OnReportIframeButton = ({
                                     ))}
                                 </Select>
                             </FormControl>
+
+                            <TextField
+                                label="Width"
+                                type="number"
+                                value={row.IframeWidth}
+                                onChange={(e) => handleChange(index, "IframeWidth", e.target.value)}
+                                sx={{ '& .MuiInputBase-root': { height: 40 }, width: 90 }}
+                            />
+
+                            <TextField
+                                label="Height"
+                                type="number"
+                                value={row.IframeHeight}
+                                onChange={(e) => handleChange(index, "IframeHeight", e.target.value)}
+                                sx={{ '& .MuiInputBase-root': { height: 40 }, width: 90 }}
+                            />
+
+                            <label style={{ display: "flex", alignItems: "center", fontSize: 13 }}>
+                                <Checkbox
+                                    size="small"
+                                    checked={!!row.IsRedirectButton}
+                                    onChange={(e) => handleChange(index, "IsRedirectButton", e.target.checked)}
+                                />
+                                Redirect Button
+                            </label>
+
+                            <label style={{ display: "flex", alignItems: "center", fontSize: 13 }}>
+                                <Checkbox
+                                    size="small"
+                                    checked={!!row.DisableCheckboxSelection}
+                                    onChange={(e) => handleChange(index, "DisableCheckboxSelection", e.target.checked)}
+                                />
+                                Disable Checkbox
+                            </label>
+
                             <IconButton onClick={() => removeRow(index)} size="small" sx={{ height: 40, width: 40, ml: 1 }}>
                                 <X size={18} />
                             </IconButton>

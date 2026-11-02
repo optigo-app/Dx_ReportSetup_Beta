@@ -8,7 +8,10 @@ import {
   Drawer,
   FormControl,
   FormControlLabel,
+  IconButton,
+  InputAdornment,
   InputLabel,
+  ListSubheader,
   MenuItem,
   Select,
   Slide,
@@ -29,7 +32,14 @@ import {
   Square,
   ToggleRight,
   ToggleLeft,
+  Upload,
+  Trash,
+  PencilIcon,
+  Recycle,
+  X,
+  Search,
 } from "lucide-react";
+import RightBaseFormulaBuilder from "./RightBaseFormulaBuilder/RightBaseFormulaBuilder";
 
 const defaultField = {
   ColId: null,
@@ -55,14 +65,20 @@ const defaultField = {
   BorderRadius: "",
   SummaryValueKey: "",
   SummaryTitle: "",
+  PreFilterSummaryDecimal: "",
+  PreFilterSummaryDisplayOrder: "",
+  PreFilterSummarySuffix: "",
+  PreFilterSummaryTitle: "",
   IframeColumnLable: "",
+  IframeHeight: "",
+  IframeWidth: "",
   SummeryOrder: "",
   SummaryUnit: "",
   IconName: "",
   FriendlyName: "",
   ColumnDecimal: "",
-  GroupChekBox: false,
-  DefaultGroupChekBox: false,
+  GrupChekBox: false,
+  DefaultGrupChekBox: false,
   GroupColumnImageView: false,
   ActionFilter: false,
   CopyButton: false,
@@ -72,9 +88,8 @@ const defaultField = {
   PriorityColorColumn: false,
   CurrencyColumn: false,
   ViewButton: false,
-  IsRightBase: false,
+  IsRightBase: "",
   IsShowDateWithTime: false,
-  IsPrintColumn: false,
   ActionMasterName: "",
   DateTimeFrame: 0,
 };
@@ -91,12 +106,19 @@ const defaultFieldFilter = {
 const defaultFieldSummury = {
   Summary: false,
   SummaryValueFormated: false,
-  UniqueCountSummury: false,
+  IsUniqueCount: false,
 };
 
 const defaultFieldNavigate = {
   HrefLink: false,
   HyperlinkShowButton: false
+};
+
+const modelPopupReport = {
+  OpenPopUpReport: false,
+  PopUpPageId: false,
+  PopUpParamiter: "",
+  PopUpReportName: "",
 };
 
 const defaultColorPicker = {
@@ -136,7 +158,37 @@ const authIconGroups = [
       { name: "Deactive", component: <XCircle size={18} /> },
     ],
   },
+  {
+    id: 5,
+    group: "Delete",
+    icons: [
+      { name: "Active", component: <Trash size={18} /> },
+    ],
+  },
+  {
+    id: 6,
+    group: "Restore",
+    icons: [
+      { name: "Active", component: <Recycle size={18} /> },
+    ],
+  },
 ];
+
+const matchesSearch = (query, ...texts) => {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const text = texts.filter(Boolean).join(" ").toLowerCase();
+  if (text.includes(q)) return true;
+  const words = text.split(/[\s\-_/.,()]+/).filter(Boolean);
+  const used = new Set();
+  return q.split(/\s+/).sort((a, b) => b.length - a.length).every((t) => {
+    const i = words.findIndex((w, idx) => !used.has(idx) && w.startsWith(t));
+    if (i === -1) return false;
+    used.add(i);
+    return true;
+  });
+};
+
 
 
 const CustomizeColum = ({
@@ -152,28 +204,34 @@ const CustomizeColum = ({
   setFormulaList,
   isFormulaBasedSummary,
   setIsFormulaBasedSummary,
-  actionMaster
+  actionMaster,
+  isRightBaseColumMaster
 }) => {
   const clientIpAddress = typeof window !== "undefined" ? sessionStorage.getItem("clientIpAddress") : null;
   const [formData, setFormData] = useState({ ...defaultField });
-  console.log('formData: ', formData);
   const [colorPicker, setColorPicker] = useState({ ...defaultColorPicker });
   const [activeDrawer, setActiveDrawer] = useState(false);
   const [openFormulaSum, setOpenFormulaSum] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [popupSearch, setPopupSearch] = useState("");
+  const allSpData = JSON.parse(sessionStorage.getItem("allsplistData"));
   useEffect(() => {
     const base = selectedColumn?.__original || selectedColumn;
     setFormData((prev) => ({
-      ...prev,
       ...base,
       ReportId: spId,
       IsInFilterSection: base?.IsInFilterSection ? 1 : 0,
       IsOnScreenFilter: base?.IsOnScreenFilter ? 1 : 0,
       IsAuthAction: base?.IsAuthAction ? true : false,
       IsAuthActionData: base?.IsAuthActionData || "",
+      IsAuthActionInputRegex: base?.IsAuthActionInputRegex || "",
       IsAuthActionIcon: base?.IsAuthActionIcon || "",
       IsAuthActionDropdown: base?.IsAuthActionDropdown ? true : false,
       IsAuthActionDropdownMaster: base?.IsAuthActionDropdownMaster || "",
+      OpenPopUpReport: base?.OpenPopUpReport ? true : false,
+      PopUpPageId: base?.PopUpPageId || "",
+      PopUpReportName: base?.PopUpReportName || "",
+      PopUpParamiter: base?.PopUpParamiter || "",
     }));
 
     setColorPicker({
@@ -238,16 +296,15 @@ const CustomizeColum = ({
       FontColor: formData.FontColor,
       BorderRadius: Number(formData.BorderRadius) || 0,
       CopyButton: formData.CopyButton ? 1 : 0,
-      GrupChekBox: formData.GroupChekBox ? 1 : 0,
-      DefaultGrupChekBox: formData.DefaultGroupChekBox ? 1 : 0,
+      GrupChekBox: formData.GrupChekBox ? 1 : 0,
+      DefaultGrupChekBox: formData.DefaultGrupChekBox ? 1 : 0,
       IsPriorityColumn: formData.IsPriorityColumn ? 1 : 0,
       PriorityColorColumn: formData.PriorityColorColumn ? 1 : 0,
-      IsRightBase: formData.IsRightBase ? 1 : 0,
-      IsPrintColumn: formData.IsPrintColumn ? 1 : 0,
+      IsRightBase: formData.IsRightBase || "",
       IsCurrency: formData.CurrencyColumn ? 1 : 0,
       ViewButton: formData.ViewButton ? 1 : 0,
       IsShowDateWithTime: formData.IsShowDateWithTime ? 1 : 0,
-      IsUniqueCount: formData.UniqueCountSummury ? 1 : 0,
+      IsUniqueCount: formData.IsUniqueCount ? 1 : 0,
       ActionFilter: formData.ActionFilter ? 1 : 0,
       ActionMasterName: formData.ActionMasterName,
       IsLargeDataGroup: formData.IsLargeDataGroup ? 1 : 0,
@@ -279,6 +336,10 @@ const CustomizeColum = ({
       SummaryTitle: formData.SummaryTitle || null,
       SummeryOrder: formData.SummeryOrder || null,
       SummaryUnit: formData.SummaryUnit || null,
+      PreFilterSummaryDecimal: formData?.PreFilterSummaryDecimal,
+      PreFilterSummaryDisplayOrder: formData?.PreFilterSummaryDisplayOrder,
+      PreFilterSummarySuffix: formData?.PreFilterSummarySuffix,
+      PreFilterSummaryTitle: formData?.PreFilterSummaryTitle,
     };
 
     const defaultFieldNavigate = {
@@ -297,12 +358,19 @@ const CustomizeColum = ({
       IsInFilterSection: formData.IsInFilterSection || 0, // 0 if not selected
       IsOnScreenFilter: formData.IsOnScreenFilter || 0,     // 0 if not selected
       IframeColumnLable: formData.IframeColumnLable || null,     // 0 if not selected
+      IframeHeight: formData.IframeHeight || null,     // 0 if not selected
+      IframeWidth: formData.IframeWidth || null,     // 0 if not selected
       ViewButtonDataArray: formData?.ViewButtonDataArray,
       IsAuthAction: formData.IsAuthAction ? 1 : 0,
       IsAuthActionDropdown: formData.IsAuthActionDropdown ? 1 : 0,
       IsAuthActionData: formData.IsAuthActionData || "",
+      IsAuthActionInputRegex: formData.IsAuthActionInputRegex || "",
       IsAuthActionIcon: formData.IsAuthActionIcon || "",
       IsAuthActionDropdownMaster: formData.IsAuthActionDropdownMaster || "",
+      OpenPopUpReport: formData.OpenPopUpReport ? 1 : 0,
+      PopUpPageId: formData.PopUpPageId || 0,
+      PopUpReportName: formData.PopUpReportName || "",
+      PopUpParamiter: formData.PopUpParamiter || "",
       ...colorPicker
     };
 
@@ -327,6 +395,7 @@ const CustomizeColum = ({
           IsAuthAction: formData.IsAuthAction ? 1 : 0,
           IsAuthActionDropdown: formData.IsAuthActionDropdown ? 1 : 0,
           IsAuthActionData: formData.IsAuthActionData || "",
+          IsAuthActionInputRegex: formData.IsAuthActionInputRegex || "",
           IsAuthActionIcon: formData.IsAuthActionIcon || "",
           IsAuthActionDropdownMaster: formData.IsAuthActionDropdownMaster || "",
         });
@@ -341,7 +410,34 @@ const CustomizeColum = ({
     { name: "NotebookPen", component: <NotebookPen /> },
     { name: "Printer", component: <Printer /> },
     { name: "MessageCircle", component: <MessageCircle /> },
+    { name: "Upload", component: <Upload /> },
+    { name: "Edit", component: <PencilIcon /> },
   ];
+
+  const popupMenuItems = [
+    <MenuItem key="__none" value="">--Select--</MenuItem>,
+    ...(allSpData || [])
+      .map((item) => {
+        const isMatch = matchesSearch(popupSearch, item.ReportName, item.ReportDescription);
+        const isSelected = item.PageId === formData.PopUpPageId;
+        // keep the selected item mounted (hidden) so its label always shows
+        if (!isMatch && !isSelected) return null;
+        return (
+          <MenuItem
+            key={item.ReportId}
+            value={item.PageId}
+            sx={!isMatch ? { display: "none" } : undefined}
+          >
+            {item.ReportName}
+          </MenuItem>
+        );
+      })
+      .filter(Boolean),
+  ];
+
+  const hasPopupMatches = (allSpData || []).some((item) =>
+    matchesSearch(popupSearch, item.ReportName, item.ReportDescription)
+  );
 
   return (
     <div className="Customize_Colum_Full_main" style={{ position: "relative", overflow: "hidden" }}>
@@ -433,6 +529,16 @@ const CustomizeColum = ({
                   </label>
                 ))}
             </div>
+
+
+            <div className="cc_section_label" style={{ marginTop: '10px' }}>Right Base Formula</div>
+            <div className="cc_rightbase_builder">
+              <RightBaseFormulaBuilder
+                master={isRightBaseColumMaster}
+                value={formData?.IsRightBase || ""}
+                onChange={(val) => setFormData((prev) => ({ ...prev, IsRightBase: val }))}
+              />
+            </div>
           </div>
         )}
 
@@ -514,6 +620,24 @@ const CustomizeColum = ({
             </div>
 
 
+            <div className="cc_section_label" style={{ marginTop: 12 }}>Report Option Page Summury Fields</div>
+            <div className="cc_field_grid">
+              {[["PreFilterSummaryTitle", "Summary Title"], ["PreFilterSummarySuffix", "Summary Unit"], ["PreFilterSummaryDisplayOrder", "DisplayOrder"], ["PreFilterSummaryDecimal", "Summary Decimal"]]
+                .map(([field, lbl]) => (
+                  <TextField
+                    key={field}
+                    name={field}
+                    variant="outlined"
+                    label={lbl}
+                    value={formData[field] || ""}
+                    onChange={handleInputChange}
+                    size="small"
+                    className="customize_colum_input"
+                  />
+                ))}
+            </div>
+
+
             <div style={{ display: 'flex', gap: '20px' }}>
               <div style={{ width: '50%' }}>
                 <div className="cc_section_label" style={{ marginTop: 12 }}>Positive & Negative Color</div>
@@ -543,6 +667,7 @@ const CustomizeColum = ({
           </div>
         )}
 
+        {/* ══ TAB 3: NAVIGATION ══ */}
         {/* ══ TAB 3: NAVIGATION ══ */}
         {activeTab === 3 && (
           <div className="cc_tab_panel">
@@ -577,6 +702,109 @@ const CustomizeColum = ({
                 ))}
               </Select>
             </FormControl>
+
+            <div className="cc_section_label" style={{ marginTop: 12 }}>Popup Report</div>
+            <div>
+              {/* OpenPopUpReport checkbox */}
+              <label className="cc_bool_item" style={{ marginBottom: 8 }}>
+                <Checkbox
+                  name="OpenPopUpReport"
+                  checked={!!formData.OpenPopUpReport}
+                  onChange={handleCheckboxChange}
+                  size="small"
+                  sx={{ p: "2px" }}
+                />
+                <span className="chekbox_title_value">OpenPopUpReport</span>
+              </label>
+
+              {formData.OpenPopUpReport && (
+                <>
+                  <FormControl size="small" style={{ width: "60%", marginTop: 6 }}>
+                    <InputLabel>Select Popup Report</InputLabel>
+                    <Select
+                      label="Select Popup Report"
+                      value={formData.PopUpPageId || ""}
+                      onChange={(e) => {
+                        const selected = allSpData?.find((r) => r.PageId === e.target.value);
+                        setFormData((prev) => ({
+                          ...prev,
+                          PopUpPageId: selected?.PageId || "",
+                          PopUpReportName: selected?.ReportName || "",
+                        }));
+                      }}
+                      onClose={() => setPopupSearch("")}
+                      MenuProps={{
+                        autoFocus: false,
+                        PaperProps: { sx: { maxHeight: 400 } },
+                        MenuListProps: { sx: { pt: 0 } },
+                      }}
+                    >
+                      <ListSubheader
+                        key="__search"
+                        sx={{ p: 1, bgcolor: "#fff", lineHeight: "normal", zIndex: 2 }}
+                        onClickCapture={(e) => e.stopPropagation()}
+                      >
+                        <TextField
+                          size="small"
+                          fullWidth
+                          autoFocus
+                          placeholder="Search reports..."
+                          value={popupSearch}
+                          onChange={(e) => setPopupSearch(e.target.value)}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Search size={16} />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                      </ListSubheader>
+
+                      {popupMenuItems}
+
+                      {!hasPopupMatches && (
+                        <MenuItem key="__empty" disabled>No reports found</MenuItem>
+                      )}
+                    </Select>
+                  </FormControl>
+
+                  {/* PopUpParamiter — multi checkbox from allColumData */}
+                  <div className="cc_section_label" style={{ marginTop: 12 }}>
+                    Popup Parameters (PopUpParamiter)
+                  </div>
+                  <div className="cc_bool_grid" style={{ marginTop: 6, height: '25vh', overflow: 'auto' }}>
+                    {allColumData?.map((col) => {
+                      const selectedParams = formData.PopUpParamiter
+                        ? formData.PopUpParamiter.split(",").map((s) => s.trim()).filter(Boolean)
+                        : [];
+                      const isChecked = selectedParams.includes(col.FieldName);
+                      return (
+                        <label key={col.ColId} className="cc_bool_item">
+                          <Checkbox
+                            checked={isChecked}
+                            size="small"
+                            sx={{ p: "2px" }}
+                            onChange={() => {
+                              const updated = isChecked
+                                ? selectedParams.filter((f) => f !== col.FieldName)
+                                : [...selectedParams, col.FieldName];
+                              setFormData((prev) => ({
+                                ...prev,
+                                PopUpParamiter: updated.join(","),
+                              }));
+                            }}
+                          />
+                          <span className="chekbox_title_value">{col.FieldName}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         )}
 
@@ -604,6 +832,26 @@ const CustomizeColum = ({
                 variant="outlined"
                 label="Iframe Column Label"
                 value={formData.IframeColumnLable || ""}
+                onChange={handleInputChange}
+                size="small"
+                className="customize_colum_input"
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <TextField
+                name="IframeHeight"
+                variant="outlined"
+                label="Iframe Height(px)"
+                value={formData.IframeHeight || ""}
+                onChange={handleInputChange}
+                size="small"
+                className="customize_colum_input"
+              />
+              <TextField
+                name="IframeWidth"
+                variant="outlined"
+                label="Iframe Width"
+                value={formData.IframeWidth || ""}
                 onChange={handleInputChange}
                 size="small"
                 className="customize_colum_input"
@@ -671,6 +919,40 @@ const CustomizeColum = ({
                   <span className="chekbox_title_value">IsAuthAction</span>
                 </label>
                 <div className="cc_section_label" style={{ marginTop: 20 }}>Auth Action Icone On Column</div>
+                <div style={{ display: 'flex', gap: '30px' }}>
+                  <FormControl size="small" style={{ width: "40%", marginTop: 6 }}>
+                    <InputLabel>Input Value Regex</InputLabel>
+                    <Select
+                      label="Input Value Regex"
+                      name="IsAuthActionInputRegex"
+                      value={formData.IsAuthActionInputRegex || ""}
+                      onChange={handleInputChange}
+                    >
+                      <MenuItem value="0">--Select--</MenuItem>
+                      <MenuItem value="1">Mobile No.</MenuItem>
+                      <MenuItem value="2">Email</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <div
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        IsAuthActionIcon: Number(prev.IsAuthActionIcon) === 4 ? "" : 4,
+                      }))
+                    }
+                    className={`cc_icon_group_block${Number(formData.IsAuthActionIcon) == 4 ? " cc_icon_group_block_active" : ""}`}
+                  >
+                    <div className="cc_icon_group_name">
+                      Input Type
+                    </div>
+                    <div className="cc_icon_group_row">
+                      <div className={`cc_icon_group_item " cc_icon_group_active" : ""}`}>
+                        <span className="cc_icon_group_label"><input type="text" disabled /></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div className="cc_icon_section_wrap">
                   {authIconGroups.map((group) => {
                     const isGroupSelected = Number(formData.IsAuthActionIcon) === group.id; // ← whole group
@@ -688,13 +970,6 @@ const CustomizeColum = ({
                       >
                         <div className="cc_icon_group_name">
                           {group.group}
-                          <span className="cc_icon_group_badge" style={{ marginLeft: "auto" }}>
-                            {isGroupSelected ? (
-                              <CheckCircle2 size={15} color="#22c55e" strokeWidth={2.5} />
-                            ) : (
-                              <XCircle size={15} color="#ef4444" strokeWidth={2.5} />
-                            )}
-                          </span>
                         </div>
 
                         <div className="cc_icon_group_row">
@@ -711,6 +986,7 @@ const CustomizeColum = ({
                       </div>
                     );
                   })}
+
                 </div>
               </div>
 

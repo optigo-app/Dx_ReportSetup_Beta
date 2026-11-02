@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { memo, useCallback, useEffect, useState } from "react";
@@ -10,9 +9,189 @@ import {
   Snackbar,
   TextField,
   Typography,
+  Modal,
+  Box,
+  IconButton,
 } from "@mui/material";
+import { ChevronDown, X } from "lucide-react";
 
-// Move SlideValueSelector OUTSIDE the parent component
+// ─── formula builder constants/helpers (same as FormulaBaseSummary) ──────────
+const OPERATORS = ["+", "-", "*", "/", "(", ")", "100"];
+const tokensToFormulaString = (tokens) => tokens.join(" ").replace(/\s+/g, " ").trim();
+
+const formulaModalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "90%",
+  maxWidth: 560,
+  bgcolor: "background.paper",
+  borderRadius: 1,
+  boxShadow: 24,
+  padding: "16px 20px 20px",
+};
+
+// ─── Formula Builder Modal ─────────────────────────────────────────────────
+const FormulaBuilderModal = ({ open, onClose, onSave, columns, initialFormula }) => {
+  const [tokens, setTokens] = useState([]);
+  const [colOpen, setColOpen] = useState(false);
+  const [manualValue, setManualValue] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setTokens(initialFormula ? initialFormula.split(" ").filter(Boolean) : []);
+      setColOpen(false);
+      setManualValue("");
+    }
+  }, [open, initialFormula]);
+
+  const addToken = (tok) => {
+    setTokens((p) => [...p, tok]);
+    setColOpen(false);
+  };
+  const removeLastToken = () => setTokens((p) => p.slice(0, -1));
+  const clearTokens = () => setTokens([]);
+
+  const handleSave = () => {
+    onSave(tokensToFormulaString(tokens));
+    onClose();
+  };
+
+  return (
+    <Modal open={open} onClose={onClose}>
+      <Box sx={formulaModalStyle}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <Typography variant="subtitle1">Set Formula</Typography>
+          <IconButton size="small" onClick={onClose}>
+            <X size={16} />
+          </IconButton>
+        </div>
+
+        {/* token display */}
+        <div className="fbs_token_display" style={{ minHeight: 38, border: "1px solid #ddd", borderRadius: 4, padding: 6, marginBottom: 10, display: "flex", flexWrap: "wrap", gap: 4 }}>
+          {tokens.length === 0 ? (
+            <span style={{ color: "#999", fontSize: 13 }}>Pick columns &amp; operators below…</span>
+          ) : (
+            tokens.map((tok, i) => (
+              <span
+                key={i}
+                style={{
+                  padding: "2px 8px",
+                  borderRadius: 4,
+                  fontSize: 12,
+                  background: OPERATORS.includes(tok) ? "#eef" : "#e8f5e9",
+                }}
+              >
+                {tok}
+              </span>
+            ))
+          )}
+        </div>
+
+        {/* controls */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginBottom: 10, position: "relative" }}>
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setColOpen((p) => !p)}
+              style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
+            >
+              Column <ChevronDown size={12} />
+            </button>
+            {colOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  zIndex: 10,
+                  background: "#fff",
+                  border: "1px solid #ddd",
+                  borderRadius: 4,
+                  maxHeight: 180,
+                  overflowY: "auto",
+                  minWidth: 160,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                }}
+              >
+                {(columns || [])
+                  .filter((col) => col.ColumnType === "Number")
+                  .map((col) => (
+                    <div
+                      key={col.ColId}
+                      onClick={() => addToken(col.FieldName)}
+                      style={{ padding: "6px 10px", fontSize: 13, cursor: "pointer" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f5")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      {col.HeaderName || col.FieldName}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+
+          {OPERATORS.map((op) => (
+            <button
+              key={op}
+              type="button"
+              onClick={() => addToken(op)}
+              style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
+            >
+              {op}
+            </button>
+          ))}
+
+          <input
+            type="text"
+            placeholder="value…"
+            value={manualValue}
+            onChange={(e) => setManualValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && manualValue.trim()) {
+                addToken(manualValue.trim());
+                setManualValue("");
+              }
+            }}
+            style={{ width: 80, padding: "4px 6px", borderRadius: 4, border: "1px solid #ccc" }}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              if (manualValue.trim()) {
+                addToken(manualValue.trim());
+                setManualValue("");
+              }
+            }}
+            style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
+          >
+            +
+          </button>
+
+          <button type="button" onClick={removeLastToken} style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}>⌫</button>
+          <button type="button" onClick={clearTokens} style={{ padding: "4px 10px", borderRadius: 4, border: "1px solid #ccc", background: "#fff", cursor: "pointer", color: "#e53935" }}>Clear</button>
+        </div>
+
+        {tokens.length > 0 && (
+          <div style={{ marginBottom: 12, fontSize: 13 }}>
+            <span style={{ color: "#777" }}>Preview: </span>
+            <code>{tokensToFormulaString(tokens)}</code>
+          </div>
+        )}
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+          <Button variant="outlined" onClick={onClose}>Cancel</Button>
+          <Button variant="contained" style={{ backgroundColor: "rgb(86, 74, 252)" }} onClick={handleSave}>
+            Save
+          </Button>
+        </div>
+      </Box>
+    </Modal>
+  );
+};
+
+// ─── SlideValueSelector ──────────────────────────────────────────────────────
 const SlideValueSelector = memo(
   ({
     title,
@@ -25,6 +204,7 @@ const SlideValueSelector = memo(
     setValues,
     errors,
     setErrors,
+    onOpenFormulaBuilder,
   }) => {
     const errorKey = `${sideNumber === 1 ? "F" : "S"}-${blockNumber}`;
     const errMsg = errors?.[errorKey] || "";
@@ -97,14 +277,38 @@ const SlideValueSelector = memo(
                 helperText={errMsg}
               />
 
-              <TextField
-                type="text"
-                label="Enter formula"
-                size="small"
-                fullWidth
-                value={values[blockNumber]?.Formula || ""}
-                onChange={(e) => handleInputChange("Formula", e.target.value)}
-              />
+              <div style={{ display: "flex", gap: 6, width: "100%", alignItems: "center" }}>
+                <TextField
+                  type="text"
+                  label="Formula"
+                  size="small"
+                  fullWidth
+                  disabled
+                  value={values[blockNumber]?.Formula || ""}
+                  InputProps={{ readOnly: true }}
+                  onClick={() =>
+                    onOpenFormulaBuilder(
+                      sideNumber,
+                      blockNumber,
+                      values[blockNumber]?.Formula || ""
+                    )
+                  }
+                />
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() =>
+                    onOpenFormulaBuilder(
+                      sideNumber,
+                      blockNumber,
+                      values[blockNumber]?.Formula || ""
+                    )
+                  }
+                  style={{ whiteSpace: "nowrap", color: "rgb(86, 74, 252)", borderColor: "rgb(86, 74, 252)", minWidth: '20px', height: '38px' }}
+                >
+                  ADD
+                </Button>
+              </div>
             </div>
 
             <div className="slpiter_add_deatil_sub_div">
@@ -148,14 +352,16 @@ const buildSlideObject = (selected, values) => {
     firstSlideThirdData: [],
     firstSlideFourthData: [],
   };
-  Object.entries(selected).forEach(([block, field]) => {
-    if (field) {
+  Object.entries(values).forEach(([block, val]) => {
+    const field = selected[block];
+    const isActive = !!field || !!val?.Formula?.trim();
+    if (isActive) {
       result[SLIDE_KEY_MAP[Number(block)]] = [{
-        selectedField: field,
-        title: values[block]?.Title || "",
-        unit: values[block]?.Unit || "",
-        formula: values[block]?.Formula || "",
-        decimal: values[block]?.DecimalValue || "",
+        selectedField: field || "",
+        title: val?.Title || "",
+        unit: val?.Unit || "",
+        formula: val?.Formula || "",
+        decimal: val?.DecimalValue || "",
       }];
     }
   });
@@ -175,59 +381,71 @@ const OtherSetting = ({
   const clientIpAddress = typeof window !== "undefined" ? sessionStorage.getItem("clientIpAddress") : null;
 
   const [errors, setErrors] = useState({});
-  const [firstSlideValues, setFirstSlideValues] = useState({
-    1: {},
-    2: {},
-    3: {},
-    4: {},
-  });
-  const [secondSlideValues, setSecondSlideValues] = useState({
-    1: {},
-    2: {},
-    3: {},
-    4: {},
-  });
+  const [firstSlideValues, setFirstSlideValues] = useState({ 1: {}, 2: {}, 3: {}, 4: {} });
+  const [secondSlideValues, setSecondSlideValues] = useState({ 1: {}, 2: {}, 3: {}, 4: {} });
 
-  const [firstSlideSelected, setFirstSlideSelected] = useState({
-    1: "",
-    2: "",
-    3: "",
-    4: "",
-  });
-  const [secondSlideSelected, setSecondSlideSelected] = useState({
-    1: "",
-    2: "",
-    3: "",
-    4: "",
-  });
-  const [otherSettingSnackbarOpen, setOtherSettingSnackbarOpen] =
-    useState(false);
+  const [firstSlideSelected, setFirstSlideSelected] = useState({ 1: "", 2: "", 3: "", 4: "" });
+  const [secondSlideSelected, setSecondSlideSelected] = useState({ 1: "", 2: "", 3: "", 4: "" });
+  const [otherSettingSnackbarOpen, setOtherSettingSnackbarOpen] = useState(false);
+
+  // ── formula builder modal state ──
+  const [formulaModalOpen, setFormulaModalOpen] = useState(false);
+  const [formulaModalTarget, setFormulaModalTarget] = useState(null); // { sideNumber, blockNumber }
+  const [formulaModalInitial, setFormulaModalInitial] = useState("");
+
+  const openFormulaBuilder = (sideNumber, blockNumber, currentFormula) => {
+    setFormulaModalTarget({ sideNumber, blockNumber });
+    setFormulaModalInitial(currentFormula || "");
+    setFormulaModalOpen(true);
+  };
+
+  const closeFormulaBuilder = () => {
+    setFormulaModalOpen(false);
+    setFormulaModalTarget(null);
+  };
+
+  const saveFormulaToTarget = (formulaStr) => {
+    if (!formulaModalTarget) return;
+    const { sideNumber, blockNumber } = formulaModalTarget;
+    const setValues = sideNumber === 1 ? setFirstSlideValues : setSecondSlideValues;
+    setValues((prev) => ({
+      ...prev,
+      [blockNumber]: { ...prev[blockNumber], Formula: formulaStr },
+    }));
+  };
 
   const handleSave = async () => {
     setLoading(true);
     let newErrors = {};
+
     Object.entries(firstSlideValues).forEach(([block, val]) => {
-      if (val.SelectedField && !val.Title?.trim()) {
+      const isActive = !!firstSlideSelected[block] || !!val.Formula?.trim();
+      if (isActive && !val.Title?.trim()) {
         newErrors[`F-${block}`] = "Title is required";
       }
     });
     Object.entries(secondSlideValues).forEach(([block, val]) => {
-      if (val.SelectedField && !val.Title?.trim()) {
+      const isActive = !!secondSlideSelected[block] || !!val.Formula?.trim();
+      if (isActive && !val.Title?.trim()) {
         newErrors[`S-${block}`] = "Title is required";
       }
     });
+
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) {
       setLoading(false);
       return;
     }
+
     const spliterData = [];
+
     Object.entries(firstSlideValues).forEach(([block, val]) => {
-      if (firstSlideSelected[block]) {
+      const isActive = !!firstSlideSelected[block] || !!val.Formula?.trim();
+      if (isActive) {
         spliterData.push({
           SideNumber: 1,
           BlockNumber: Number(block),
-          SelectedField: firstSlideSelected[block],
+          SelectedField: firstSlideSelected[block] || "",
           Title: val.Title || "",
           Unit: val.Unit || "",
           Formula: val.Formula || "",
@@ -235,12 +453,14 @@ const OtherSetting = ({
         });
       }
     });
+
     Object.entries(secondSlideValues).forEach(([block, val]) => {
-      if (secondSlideSelected[block]) {
+      const isActive = !!secondSlideSelected[block] || !!val.Formula?.trim();
+      if (isActive) {
         spliterData.push({
           SideNumber: 2,
           BlockNumber: Number(block),
-          SelectedField: secondSlideSelected[block],
+          SelectedField: secondSlideSelected[block] || "",
           Title: val.Title || "",
           Unit: val.Unit || "",
           Formula: val.Formula || "",
@@ -253,7 +473,7 @@ const OtherSetting = ({
       con: JSON.stringify({
         mode: "saveSpliterData",
         appuserid: AllData?.LUId,
-                            IPAddress: clientIpAddress
+        IPAddress: clientIpAddress,
       }),
       p: JSON.stringify({
         ReportId: spData?.ReportId,
@@ -309,17 +529,9 @@ const OtherSetting = ({
       setSelected((prev) => ({ ...prev, ...newSelected }));
       setValues((prev) => ({ ...prev, ...newValues }));
     };
-    mapSlideData(
-      otherSpliterSideData1,
-      setFirstSlideSelected,
-      setFirstSlideValues
-    );
+    mapSlideData(otherSpliterSideData1, setFirstSlideSelected, setFirstSlideValues);
     if (otherSpliterSideData2)
-      mapSlideData(
-        otherSpliterSideData2,
-        setSecondSlideSelected,
-        setSecondSlideValues
-      );
+      mapSlideData(otherSpliterSideData2, setSecondSlideSelected, setSecondSlideValues);
   }, [otherSpliterSideData1, otherSpliterSideData2]);
 
   return (
@@ -334,6 +546,15 @@ const OtherSetting = ({
           Other Spliter Setting Saved Successfully.
         </Alert>
       </Snackbar>
+
+      <FormulaBuilderModal
+        open={formulaModalOpen}
+        onClose={closeFormulaBuilder}
+        onSave={saveFormulaToTarget}
+        columns={spliterReportColum}
+        initialFormula={formulaModalInitial}
+      />
+
       <div>
         <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
           {[1, 2, 3, 4].map((block) => (
@@ -344,16 +565,14 @@ const OtherSetting = ({
               sideNumber={1}
               selectedField={firstSlideSelected[block]}
               onSelect={(val) =>
-                setFirstSlideSelected((prev) => ({
-                  ...prev,
-                  [block]: val,
-                }))
+                setFirstSlideSelected((prev) => ({ ...prev, [block]: val }))
               }
               columns={spliterReportColum}
               values={firstSlideValues}
               setValues={setFirstSlideValues}
               errors={errors}
-              setErrors={setErrors} // Add this
+              setErrors={setErrors}
+              onOpenFormulaBuilder={openFormulaBuilder}
             />
           ))}
         </div>
@@ -367,27 +586,19 @@ const OtherSetting = ({
               sideNumber={2}
               selectedField={secondSlideSelected[block]}
               onSelect={(val) =>
-                setSecondSlideSelected((prev) => ({
-                  ...prev,
-                  [block]: val,
-                }))
+                setSecondSlideSelected((prev) => ({ ...prev, [block]: val }))
               }
               columns={spliterReportColum}
               values={secondSlideValues}
               setValues={setSecondSlideValues}
               errors={errors}
-              setErrors={setErrors} // Add this
+              setErrors={setErrors}
+              onOpenFormulaBuilder={openFormulaBuilder}
             />
           ))}
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "15px",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "center", gap: "15px" }}>
           <Button
             onClick={() => setOpen(false)}
             variant="contained"

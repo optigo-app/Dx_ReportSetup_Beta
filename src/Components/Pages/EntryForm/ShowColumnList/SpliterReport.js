@@ -18,13 +18,14 @@ const SpliterReport = ({
     spliterSecondPanelSecondData,
     handleSecondPanelSecondValue,
     handleOpen,
-    allDateOptionsShow,
     handleToggleFilterOption,
     allDateOptions,
     selectedDateOptions,
     setSpliterTopFilterDropDown,
     spliterTopFilterDropDown
 }) => {
+    console.log('spliterFirst: ', spliterFirst);
+    console.log('largeDataColum: ', largeDataColum);
     return (
         <div className="ShowList_SpliterDataeMain"
             style={{
@@ -39,37 +40,83 @@ const SpliterReport = ({
                 }
             >
                 <div>
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                        <Checkbox
-                            checked={selectedCols.includes("Spliter Report")}
-                            onChange={() => handleCheckboxChange("Spliter Report")}
-                        />
-                        <Typography className="column_label">
-                            Spliter Report
-                        </Typography>
+                    <div style={{ display: "flex", alignItems: "center", gap: '50px' }}>
+                        <div style={{display: 'flex', alignItems: 'center'}}>
+                            <Checkbox
+                                checked={selectedCols.includes("Spliter Report")}
+                                onChange={() => handleCheckboxChange("Spliter Report")}
+                            />
+                            <Typography className="column_label">
+                                Spliter Report
+                            </Typography>
+                            {selectedCols?.includes("Spliter Report") && (
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        type="number"
+                                        label="Enter Month Restriction"
+                                        fullWidth
+                                        size="small"
+                                        value={spliterMonthCont}
+                                        onChange={(e) => setSpliterMonthCont(e.target.value)}
+                                        style={{ margin: "0px 15px" }}
+                                    />
+                                </Grid>
+                            )}
+
+                        </div>
                         {selectedCols?.includes("Spliter Report") && (
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    type="number"
-                                    label="Enter Month Restriction"
-                                    fullWidth
-                                    size="small"
-                                    value={spliterMonthCont}
-                                    onChange={(e) => setSpliterMonthCont(e.target.value)}
-                                    style={{ margin: "0px 15px" }}
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <Checkbox
+                                    checked={selectedCols.includes("IsSpliterServerSide")}
+                                    onChange={() => handleCheckboxChange("IsSpliterServerSide")}
                                 />
-                            </Grid>
+                                Server Side Spliter Data
+                            </div>
                         )}
                     </div>
-                    {selectedCols?.includes("Spliter Report") && (
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                            <Checkbox
-                                checked={selectedCols.includes("SpliterReportAllDataButton")}
-                                onChange={() => handleCheckboxChange("SpliterReportAllDataButton")}
-                            />
-                            All Data Button
-                        </div>
-                    )}
+                    <div style={{ display: 'flex', gap: '30px' }}>
+                        {selectedCols?.includes("Spliter Report") && (
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <Checkbox
+                                    checked={selectedCols.includes("SpliterReportAllDataButton")}
+                                    onChange={() => handleCheckboxChange("SpliterReportAllDataButton")}
+                                />
+                                All Data Button
+                            </div>
+                        )}
+
+
+                        {selectedCols?.includes("IsSpliterServerSide") && (
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <Checkbox
+                                    checked={selectedCols.includes("IsSpliterSecondPanelOn")}
+                                    onChange={() => handleCheckboxChange("IsSpliterSecondPanelOn")}
+                                />
+                                Spliter Second Panel
+                            </div>
+                        )}
+
+                        {selectedCols?.includes("Spliter Report") && !selectedCols.includes("IsSpliterServerSide") && (
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <Checkbox
+                                    checked={selectedCols.includes("SpliterReportWithoutDate")}
+                                    onChange={() => handleCheckboxChange("SpliterReportWithoutDate")}
+                                />
+                                Spliter Report Without DateFilter
+                            </div>
+                        )}
+
+
+                        {selectedCols?.includes("Spliter Report") && !selectedCols.includes("IsSpliterServerSide") && (
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                                <Checkbox
+                                    checked={selectedCols.includes("CustomizeUserFirstPanelData")}
+                                    onChange={() => handleCheckboxChange("CustomizeUserFirstPanelData")}
+                                />
+                                Customize User First Panel Data
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {selectedCols?.includes("Spliter Report") && (
@@ -86,31 +133,33 @@ const SpliterReport = ({
                                     Select For First Slide
                                 </p>
 
-                                <FormControl
-                                    size="small"
-                                    sx={{
-                                        width: "180px",
-                                        fontSize: "12px",
-                                        margin: "10px",
-                                    }}
-                                >
-                                    <InputLabel>SpliterFirstPanelFilter</InputLabel>
-                                    <Select
-                                        label="SpliterFirstPanelFilter"
-                                        value={spliterTopFilterDropDown}
-                                        onChange={(e) =>
-                                            setSpliterTopFilterDropDown(e.target.value)
-                                        }
+                                {!selectedCols.includes("IsSpliterServerSide") && (
+                                    <FormControl
+                                        size="small"
+                                        sx={{
+                                            width: "180px",
+                                            fontSize: "12px",
+                                            margin: "10px",
+                                        }}
                                     >
-                                        <MenuItem value="">-Select-</MenuItem>
+                                        <InputLabel>SpliterFirstPanelFilter</InputLabel>
+                                        <Select
+                                            label="SpliterFirstPanelFilter"
+                                            value={spliterTopFilterDropDown}
+                                            onChange={(e) =>
+                                                setSpliterTopFilterDropDown(e.target.value)
+                                            }
+                                        >
+                                            <MenuItem value="">-Select-</MenuItem>
 
-                                        {largeDataColum?.map((d, i) => (
-                                            <MenuItem key={i} value={d.FieldName}>
-                                                {d.FieldName}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                                            {largeDataColum?.map((d, i) => (
+                                                <MenuItem key={i} value={d.FieldName}>
+                                                    {d.FieldName}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                )}
 
                                 <div
                                     className="column_row sub_row"
@@ -124,25 +173,27 @@ const SpliterReport = ({
                                 </div>
 
 
-                                <div className="largest_columns_group" style={{ height: '50vh' }}>
-                                    {largeDataColum?.map((col) => (
-                                        <div
-                                            key={`ldr1-${col.ColId}`}
-                                            className="column_row sub_row"
-                                            style={{ display: "flex", alignItems: "center" }}
-                                        >
-                                            <Checkbox
-                                                checked={spliterFirst === col.FieldName}
-                                                onChange={() =>
-                                                    handleFirstSelect(col.FieldName)
-                                                }
-                                            />
-                                            <Typography className="column_label">
-                                                {col.HeaderName}
-                                            </Typography>
-                                        </div>
-                                    ))}
-                                </div>
+                                {!selectedCols.includes("IsSpliterServerSide") && (
+                                    <div className="largest_columns_group" style={{ height: '50vh' }}>
+                                        {largeDataColum?.map((col) => (
+                                            <div
+                                                key={`ldr1-${col.ColId}`}
+                                                className="column_row sub_row"
+                                                style={{ display: "flex", alignItems: "center" }}
+                                            >
+                                                <Checkbox
+                                                    checked={spliterFirst === col.FieldName}
+                                                    onChange={() =>
+                                                        handleFirstSelect(col.FieldName)
+                                                    }
+                                                />
+                                                <Typography className="column_label">
+                                                    {col.HeaderName}
+                                                </Typography>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div>
@@ -166,72 +217,78 @@ const SpliterReport = ({
                                     />
                                     <Typography className="column_label">ALL</Typography>
                                 </div>
-                                <div className="largest_columns_group" style={{ height: '50vh' }}>
-                                    {largeDataColum?.map((col) => (
-                                        <div
-                                            key={`ldr2-${col.ColId}`}
-                                            className="column_row sub_row"
-                                            style={{ display: "flex", alignItems: "center" }}
-                                        >
-                                            <Checkbox
-                                                checked={spliterSecond === col.FieldName}
-                                                onChange={() =>
-                                                    handleSecondSelect(col.FieldName)
-                                                }
-                                            />
-                                            <Typography className="column_label">
-                                                {col.HeaderName}
-                                            </Typography>
-                                        </div>
-                                    ))}
-                                </div>
+                                {!selectedCols.includes("IsSpliterServerSide") && (
+                                    <div className="largest_columns_group" style={{ height: '50vh' }}>
+                                        {largeDataColum?.map((col) => (
+                                            <div
+                                                key={`ldr2-${col.ColId}`}
+                                                className="column_row sub_row"
+                                                style={{ display: "flex", alignItems: "center" }}
+                                            >
+                                                <Checkbox
+                                                    checked={spliterSecond === col.FieldName}
+                                                    onChange={() =>
+                                                        handleSecondSelect(col.FieldName)
+                                                    }
+                                                />
+                                                <Typography className="column_label">
+                                                    {col.HeaderName}
+                                                </Typography>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
 
 
-                            <div>
-                                <p
-                                    style={{
-                                        margin: "10px 0px 0px 13px",
-                                        fontWeight: 600,
-                                    }}
-                                    className="descLine_showColum"
-                                >
-                                    Select For Second Slide Second Value
-                                </p>
-                                <div className="largest_columns_group" style={{ height: '50vh' }}>
-                                    {largeDataColum?.map((col) => (
-                                        <div
-                                            key={`ldr2-${col.ColId}`}
-                                            className="column_row sub_row"
-                                            style={{ display: "flex", alignItems: "center" }}
-                                        >
-                                            <Checkbox
-                                                checked={spliterSecondPanelSecondData === col.FieldName}
-                                                onChange={() =>
-                                                    handleSecondPanelSecondValue(col.FieldName)
-                                                }
-                                            />
-                                            <Typography className="column_label">
-                                                {col.HeaderName}
-                                            </Typography>
-                                        </div>
-                                    ))}
+                            {!selectedCols.includes("IsSpliterServerSide") && (
+                                <div>
+                                    <p
+                                        style={{
+                                            margin: "10px 0px 0px 13px",
+                                            fontWeight: 600,
+                                        }}
+                                        className="descLine_showColum"
+                                    >
+                                        Select For Second Slide Second Value
+                                    </p>
+                                    <div className="largest_columns_group" style={{ height: '50vh' }}>
+                                        {largeDataColum?.map((col) => (
+                                            <div
+                                                key={`ldr2-${col.ColId}`}
+                                                className="column_row sub_row"
+                                                style={{ display: "flex", alignItems: "center" }}
+                                            >
+                                                <Checkbox
+                                                    checked={spliterSecondPanelSecondData === col.FieldName}
+                                                    onChange={() =>
+                                                        handleSecondPanelSecondValue(col.FieldName)
+                                                    }
+                                                />
+                                                <Typography className="column_label">
+                                                    {col.HeaderName}
+                                                </Typography>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
-                        <Button
-                            style={{
-                                color: "blue",
-                                textDecoration: "underline",
-                                cursor: "pointer",
-                                marginTop: "20px",
-                            }}
-                            onClick={handleOpen}
-                        >
-                            ADD OTHER DETAIL ON SPLITER VIEW
-                        </Button>
+                        {!selectedCols.includes("IsSpliterServerSide") && (
+                            <Button
+                                style={{
+                                    color: "blue",
+                                    textDecoration: "underline",
+                                    cursor: "pointer",
+                                    marginTop: "20px",
+                                }}
+                                onClick={handleOpen}
+                            >
+                                ADD OTHER DETAIL ON SPLITER VIEW
+                            </Button>
+                        )}
                     </div>
                 )}
             </div>

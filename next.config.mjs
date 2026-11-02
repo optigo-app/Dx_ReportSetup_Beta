@@ -1,8 +1,8 @@
 import path from "path";
 
 const nextConfig = {
-  basePath: "/R50B3",
-  assetPrefix: "/R50B3",
+  basePath: "/beta",
+  assetPrefix: "/beta",
   trailingSlash: false,
   skipTrailingSlashRedirect: true,
 

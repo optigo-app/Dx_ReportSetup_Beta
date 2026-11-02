@@ -72,6 +72,7 @@ $brand-dark: rgb(66, 54, 220);
       font-family: $fontFamily;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      display: flex;
 
       &.editor_panel_header {
         display: flex;

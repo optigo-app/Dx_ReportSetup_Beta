@@ -21,6 +21,7 @@ const createEmptyRow = () => ({
     fontweightl: "",
     fontweightv: "",
     displayorder: "",
+    HideShowLableName: "",
     IsHideShowOption: false, // NEW
 });
 
@@ -234,6 +235,20 @@ const ImageRowCard = ({ row, index, columns, onChange, onRemove, spData }) => {
                         placeholder="e.g. 1"
                         value={row.displayorder}
                         onChange={handleField("displayorder")}
+                        sx={inputSx}
+                        inputProps={{ min: 1 }}
+                    />
+                </Box>
+
+                <Box>
+                    <div style={labelStyle}>hideShowLable Name</div>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        type="text"
+                        placeholder="Enter Name"
+                        value={row.HideShowLableName}
+                        onChange={handleField("HideShowLableName")}
                         sx={inputSx}
                         inputProps={{ min: 1 }}
                     />
