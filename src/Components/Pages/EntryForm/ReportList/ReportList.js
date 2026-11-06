@@ -68,6 +68,7 @@ const ReportList = () => {
   const [selectedReports, setSelectedReports] = useState([]); // array of ReportId
   const [formErrors, setFormErrors] = useState({ name: "", reports: "" });
   const [displayOrders, setDisplayOrders] = useState({}); // { [ReportId]: order }
+  const [descriptions, setDescriptions] = useState({}); // { [ReportId]: description }
 
   // Snackbar
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
@@ -132,6 +133,7 @@ const ReportList = () => {
     setMultiReportName("");
     setSelectedReports([]);
     setDisplayOrders({});
+    setDescriptions({});
     setFormErrors({ name: "", reports: "", order: "" });
     setIsEditMode(false);
     setEditMainId(null);
@@ -162,6 +164,7 @@ const ReportList = () => {
     // Match SubPageId → PageId in spList and restore saved display order
     const preSelected = [];
     const orders = {};
+    const descs = {};
 
     subReports.forEach((sub, idx) => {
       const match = spList.find((sp) => sp.PageId === sub.SubPageId);
@@ -171,11 +174,14 @@ const ReportList = () => {
           sub.DisplayOrder ?? sub.DisplayOrder ?? sub.DisplayOrder
         );
         orders[match.ReportId] = savedOrder > 0 ? savedOrder : idx + 1;
+        descs[match.ReportId] =
+          sub.ReportDescription ?? sub.Description ?? "";
       }
     });
 
     setSelectedReports(preSelected);
     setDisplayOrders(orders);
+    setDescriptions(descs);
     setIconModalOpen(true);
   };
 
@@ -190,6 +196,10 @@ const ReportList = () => {
     if (isSelected) {
       setSelectedReports((prev) => prev.filter((id) => id !== reportId));
       setDisplayOrders((prev) => {
+        const { [reportId]: _removed, ...rest } = prev;
+        return rest;
+      });
+      setDescriptions((prev) => {
         const { [reportId]: _removed, ...rest } = prev;
         return rest;
       });
@@ -208,6 +218,10 @@ const ReportList = () => {
     if (value !== "" && !/^\d+$/.test(value)) return; // digits only
     setDisplayOrders((prev) => ({ ...prev, [reportId]: value }));
     setFormErrors((prev) => ({ ...prev, order: "" }));
+  };
+
+  const handleDescriptionChange = (reportId, value) => {
+    setDescriptions((prev) => ({ ...prev, [reportId]: value }));
   };
 
   // ─── Validate ─────────────────────────────────────────────────────────────────
@@ -248,7 +262,7 @@ const ReportList = () => {
         return {
           ReportName: sp?.ReportName || "",
           pid: sp?.PageId || null,
-          ReportDescription: "",
+          ReportDescription: descriptions[reportId] || "",
           category: "",
           DisplayOrder: Number(displayOrders[reportId]) || "",
         };
@@ -412,10 +426,8 @@ const ReportList = () => {
                     <div
                       key={sp.ReportId}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: "8px",
+                        padding: "2px 0",
+                        borderBottom: "1px solid #f0f0f0",
                       }}
                     >
                       <FormControlLabel
@@ -431,22 +443,42 @@ const ReportList = () => {
                             {sp.ReportName}
                           </Typography>
                         }
-                        style={{ flex: 1, margin: 0 }}
+                        style={{ margin: 0 }}
                       />
                       {isSelected && (
-                        <TextField
-                          label="Order"
-                          size="small"
-                          value={displayOrders[sp.ReportId] ?? ""}
-                          onChange={(e) => handleOrderChange(sp.ReportId, e.target.value)}
-                          slotProps={{
-                            htmlInput: { inputMode: "numeric", maxLength: 3 },
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "8px",
+                            paddingLeft: "32px",
+                            marginBottom: "8px",
                           }}
-                          sx={{
-                            width: "80px",
-                            "& .MuiInputBase-input": { padding: "5px 8px", textAlign: "center" },
-                          }}
-                        />
+                        >
+                          <TextField
+                            label="Order"
+                            size="small"
+                            value={displayOrders[sp.ReportId] ?? ""}
+                            onChange={(e) => handleOrderChange(sp.ReportId, e.target.value)}
+                            slotProps={{
+                              htmlInput: { inputMode: "numeric", maxLength: 3 },
+                            }}
+                            sx={{
+                              width: "80px",
+                              flexShrink: 0,
+                              "& .MuiInputBase-input": { padding: "5px 8px", textAlign: "center" },
+                            }}
+                          />
+                          <TextField
+                            label="Description"
+                            size="small"
+                            value={descriptions[sp.ReportId] ?? ""}
+                            onChange={(e) => handleDescriptionChange(sp.ReportId, e.target.value)}
+                            sx={{
+                              flex: 1,
+                              "& .MuiInputBase-input": { padding: "5px 8px" },
+                            }}
+                          />
+                        </div>
                       )}
                     </div>
                   );
